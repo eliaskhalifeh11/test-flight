@@ -1,112 +1,132 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import "../css/searchflights.css";
 
 
 function SearchFlights() {
   const [formData, setFormData] = useState({
     from: "",
     to: "",
-    date: "",
+    departureDate: "",
+    returnDate: "",
     passengers: 1,
   });
 
   const [results, setResults] = useState([]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSearch = () => {
-    const mockResults = [
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // TODO: Implement flight search logic here or mock results
+    // For now, let's use mock data
+    setResults([
       {
         id: 1,
-        from: "Beirut",
-        to: "Dubai",
-        date: "2025-08-01",
-        price: "$350",
+        airline: "SkyFly Airlines",
+        flightNumber: "SF123",
+        departure: formData.from,
+        arrival: formData.to,
+        time: "10:00 AM - 1:00 PM",
+        price: 199,
       },
       {
         id: 2,
-        from: "Beirut",
-        to: "Paris",
-        date: "2025-08-01",
-        price: "$500",
+        airline: "FlyHigh Airways",
+        flightNumber: "FH456",
+        departure: formData.from,
+        arrival: formData.to,
+        time: "3:00 PM - 6:00 PM",
+        price: 220,
       },
-    ];
-
-    setResults(mockResults);
+    ]);
   };
 
-  
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>Search Flights</h2>
-      <div style={{ marginBottom: "1rem" }}>
-        <input
-          type="text"
-          name="from"
-          placeholder="From"
-          value={formData.from}
-          onChange={handleChange}
-          style={styles.input}
-        />
-        <input
-          type="text"
-          name="to"
-          placeholder="To"
-          value={formData.to}
-          onChange={handleChange}
-          style={styles.input}
-        />
-        <input
-          type="date"
-          name="date"
-          value={formData.date}
-          onChange={handleChange}
-          style={styles.input}
-        />
-        <input
-          type="number"
-          name="passengers"
-          min="1"
-          value={formData.passengers}
-          onChange={handleChange}
-          style={styles.input}
-        />
-        <button onClick={handleSearch} style={styles.button}>
-          Search
-        </button>
-      </div>
+    <div className="search-flights-container">
+      <h1>Search Flights</h1>
 
-      <h3>Results</h3>
-      {results.length > 0 ? (
-        <ul>
-          {results.map((flight) => (
-            <li key={flight.id}>
-              ✈ {flight.from} → {flight.to} on {flight.date} — {flight.price}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No results yet.</p>
-      )}
+      <form onSubmit={handleSearch} className="search-form">
+        <label>
+          From:
+          <input
+            type="text"
+            name="from"
+            value={formData.from}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label>
+          To:
+          <input
+            type="text"
+            name="to"
+            value={formData.to}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label>
+          Departure Date:
+          <input
+            type="date"
+            name="departureDate"
+            value={formData.departureDate}
+            onChange={handleChange}
+            required
+          />
+        </label>
+
+        <label>
+          Return Date:
+          <input
+            type="date"
+            name="returnDate"
+            value={formData.returnDate}
+            onChange={handleChange}
+          />
+        </label>
+
+        <label>
+          Passengers:
+          <input
+            type="number"
+            name="passengers"
+            min="1"
+            max="10"
+            value={formData.passengers}
+            onChange={handleChange}
+          />
+        </label>
+
+        <button type="submit">Search</button>
+      </form>
+
+      <div className="search-results">
+        {results.length > 0 ? (
+          results.map(flight => (
+            <div key={flight.id} className="flight-card">
+              <h3>{flight.airline} - {flight.flightNumber}</h3>
+              <p>{flight.departure} → {flight.arrival}</p>
+              <p>{flight.time}</p>
+              <p>Price: ${flight.price}</p>
+              <Link to={`/booking/${flight.id}`}>
+                <button>Book</button>
+              </Link>
+            </div>
+          ))
+        ) : (
+          <p>No results found. Please enter your search and click Search.</p>
+        )}
+      </div>
     </div>
   );
 }
-
-const styles = {
-  input: {
-    marginRight: "1rem",
-    padding: "0.5rem",
-    fontSize: "1rem",
-  },
-  button: {
-    padding: "0.5rem 1rem",
-    fontSize: "1rem",
-    backgroundColor: "#28a745",
-    color: "white",
-    border: "none",
-    cursor: "pointer",
-  },
-};
 
 export default SearchFlights;
