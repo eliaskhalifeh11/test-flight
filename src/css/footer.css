@@ -1,14 +1,32 @@
 .footer {
-  background-color: #222;
-  color: #aaa;
-  padding: 1.5rem;
-  text-align: center;
-  margin-top: 3rem;
+  position: bottom;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #1e1e1e;
+  color: white;
+  padding-bottom: 0px;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* for responsiveness */
+  gap: 1rem;
+  font-size: 0.95rem;
+}
+
+.footer .socialLink {
+  color: white;
+  margin-left: 5px;
+  text-decoration: underline;
 }
 
 .footer a {
   color: #aaa;
-  margin-left: 0.5rem;
   text-decoration: none;
 }
 

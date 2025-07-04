@@ -18,7 +18,7 @@
 .navbar__left {
   display: flex;
   align-items: center;
-  gap: 80rem;
+  gap: 20rem;
 }
 
 .navbar__logo {
@@ -125,3 +125,4 @@
     font-size: 1.1rem;
   }
 }
+

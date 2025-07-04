@@ -1,0 +1,47 @@
+/* layout.css */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Make sure the page fills the screen height */
+.page-layout {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 100px; /* adjust based on footer height */
+}
+
+/* Main content area */
+.page-content {
+  padding: 20px;
+}
+
+/* Footer positioning */
+footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 100px; /* match padding-bottom above */
+  width: 100%;
+  background-color: #222;
+  color: #fff;
+  text-align: center;
+  line-height: 100px;
+}
+
+/* Adjust based on your actual navbar/footer height */
+.page-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  margin-top: 90px;  /* space below navbar */
+  margin-bottom: 0px; /* space above footer */
+  flex: 1;  /* take remaining height between nav and footer */
+  padding: 1rem; /* optional, for inner spacing */
+}

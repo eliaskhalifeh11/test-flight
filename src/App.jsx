@@ -11,25 +11,25 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminFlights from './pages/AdminFlights';
 import AdminBookings from './pages/AdminBookings';
 import NotFound from './pages/NotFound';
+import Full from './pages/Full';
 
 function App() {
   return (
     <>
-      <Navbar />
-      <div style={{ paddingTop: "80px" }}>
+    
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/search" element={<SearchFlights />} />
-          <Route path="/booking/:id" element={<Booking />} />
-          <Route path="/payment" element={<Payment />} />
-          <Route path="/confirmation" element={<Confirmation />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/flights" element={<AdminFlights />} />
-          <Route path="/admin/bookings" element={<AdminBookings />} />
-          <Route path="*" element={<NotFound />} />
+         <Route path="/" element={<Full />}>
+            <Route index element={<Home />} />
+            <Route path="search" element={<SearchFlights />} />
+            <Route path="booking/:id" element={<Booking />} />
+            <Route path="payment" element={<Payment />} />
+            <Route path="confirmation" element={<Confirmation />} />
+            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="admin/flights" element={<AdminFlights />} />
+            <Route path="admin/bookings" element={<AdminBookings />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Routes>
-      </div>
-      <Footer />   {/* <-- place Footer here, outside Routes */}
     </>
   );
 }

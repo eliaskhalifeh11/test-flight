@@ -2,38 +2,85 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import "../css/home.css";
 
+// Scroll animation wrapper
 function ScrollAnimationWrapper({ children }) {
   const [visible, setVisible] = useState(false);
-  const domRef = useRef();
+  const domRef = useRef(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           setVisible(true);
-          observer.unobserve(domRef.current);
+          observer.unobserve(entry.target);
         }
       });
     });
+
     if (domRef.current) {
       observer.observe(domRef.current);
     }
+
     return () => observer.disconnect();
   }, []);
 
   return (
-    <div
-      className={`animate-on-scroll ${visible ? "visible" : ""}`}
-      ref={domRef}
-    >
+    <div className={`animate-on-scroll ${visible ? "visible" : ""}`} ref={domRef}>
       {children}
     </div>
   );
 }
 
+// Login Modal
+function LoginModal({ onClose }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = () => {
+    const role = username.startsWith("admin") ? "admin" : "user";
+    localStorage.setItem("role", role);
+    onClose();
+    window.location.reload();
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <h2>Login</h2>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={e => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+        <button onClick={handleLogin}>Login</button>
+        <button onClick={onClose} className="close-btn">Close</button>
+      </div>
+    </div>
+  );
+}
+
+// Home Page
 function Home() {
+  const [showLogin, setShowLogin] = useState(false);
+
   return (
     <div className="page-container">
+      {/* Login Button Top Right */}
+      <div className="top-right-login">
+        <button className="login-button" onClick={() => setShowLogin(true)}>
+          Login
+        </button>
+      </div>
+
+      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-overlay" />
@@ -93,7 +140,7 @@ function Home() {
   );
 }
 
-// Small component for Destination cards
+// Reusable components
 function DestinationCard({ city, imageUrl }) {
   return (
     <div className="destination-card">
@@ -103,7 +150,6 @@ function DestinationCard({ city, imageUrl }) {
   );
 }
 
-// Small component for Testimonials
 function Testimonial({ name, feedback }) {
   return (
     <div className="testimonial-card">
