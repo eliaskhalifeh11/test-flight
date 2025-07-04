@@ -57,7 +57,7 @@ function Signup() {
       </form>
     </div>
   );
-<p> bala akell kharaaa aw chou bedde fawet</p>
+<p> bala akell kharaaa aw chou bedde fawet  </p>
 
 }
 
