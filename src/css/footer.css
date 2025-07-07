@@ -14,7 +14,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap; /* for responsiveness */
+  flex-wrap: wrap; 
   gap: 1rem;
   font-size: 0.95rem;
 }

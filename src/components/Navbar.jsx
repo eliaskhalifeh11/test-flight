@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../css/navbar.css";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const navigate = useNavigate();
 
   const closeMenus = () => {
     setMenuOpen(false);
@@ -13,12 +16,23 @@ function Navbar() {
   };
 
   useEffect(() => {
-    // Check for admin role in localStorage (or change to sessionStorage if needed)
-    const role = localStorage.getItem("role"); // e.g. "admin"
-    if (role === "admin") {
-      setIsAdmin(true);
-    }
+    const role = localStorage.getItem("role");
+    const loggedIn = localStorage.getItem("loggedIn") === "true";
+
+    setIsLoggedIn(loggedIn);
+    setIsAdmin(role === "admin");
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("username");
+    localStorage.removeItem("password");
+    localStorage.removeItem("role");
+    setIsLoggedIn(false);
+    setIsAdmin(false);
+    navigate("/");
+    window.location.reload();
+  };
 
   return (
     <nav className="navbar">
@@ -29,7 +43,6 @@ function Navbar() {
           <Link to="/" onClick={closeMenus}>Home</Link>
           <Link to="/search" onClick={closeMenus}>Search Flights</Link>
 
-          {/* Show Admin menu only if isAdmin is true */}
           {isAdmin && (
             <div className="dropdown" onClick={() => setAdminOpen(!adminOpen)}>
               <span className="dropdown__toggle">Admin ▼</span>
@@ -41,6 +54,24 @@ function Navbar() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="navbar__auth">
+              {isLoggedIn ? (
+          <div className="navbar__user-info">
+            <span className="navbar__username">👤 {localStorage.getItem("username")}</span>
+            <button className="logout-btn" onClick={handleLogout}>Logout</button>
+          </div>
+        ) : (
+          <button className="profile-icon-btn" onClick={() => navigate("/auth")}>
+            <img
+              src="https://img.icons8.com/ios-glyphs/30/ffffff/user--v1.png"
+              alt="Profile"
+              className="profile-icon"
+            />
+          </button>
+        )}
+
       </div>
 
       <button className="navbar__toggle" onClick={() => setMenuOpen(!menuOpen)}>

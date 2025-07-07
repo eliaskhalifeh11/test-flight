@@ -126,3 +126,57 @@
   }
 }
 
+.logout-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+}
+.logout-btn:hover {
+  text-decoration: underline;
+}
+
+.navbar__auth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+}
+
+.profile-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.profile-icon {
+  width: 28px;
+  height: 28px;
+  filter: invert(100%);
+}
+
+
+.navbar__user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar__username {
+  color: white;
+  font-weight: bold;
+}

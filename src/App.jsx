@@ -12,7 +12,8 @@ import AdminFlights from './pages/AdminFlights';
 import AdminBookings from './pages/AdminBookings';
 import NotFound from './pages/NotFound';
 import Full from './pages/Full';
-import SignUp from "./pages/SignUp";
+import AuthPage from "./pages/AuthPage";
+
 
 function App() {
   return (
@@ -23,7 +24,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path="search" element={<SearchFlights />} />
             <Route path="booking/:id" element={<Booking />} />
-            <Route path="signup" element={<SignUp />} />
+            <Route path="auth" element={<AuthPage />} />
             <Route path="payment" element={<Payment />} />
             <Route path="confirmation" element={<Confirmation />} />
             <Route path="admin" element={<AdminDashboard />} />

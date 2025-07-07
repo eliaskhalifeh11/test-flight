@@ -68,23 +68,14 @@ function LoginModal({ onClose }) {
 
 // Home Page
 function Home() {
-  const [showLogin, setShowLogin] = useState(false);
-
+  
   return (
     <div className="page-container">
       {/* Login Button Top Right */}
     
-<div className="top-right-auth">
-  <Link to="/signup" className="signup-icon">
-    <img
-      src="https://img.icons8.com/ios-glyphs/30/ffffff/add-user-male.png"
-      alt="Sign Up"
-    />
-  </Link>
-</div>
 
 
-      {showLogin && <LoginModal onClose={() => setShowLogin(false)} />}
+   
 
       {/* Hero Section */}
       <section className="hero-section">

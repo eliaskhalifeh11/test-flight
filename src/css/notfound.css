@@ -1,0 +1,35 @@
+.notfound-container {
+  text-align: center;
+  padding: 100px 20px;
+  color: #333;
+  background-image: url("https://source.unsplash.com/1600x900/?clouds,sky");
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
+  backdrop-filter: brightness(0.8);
+}
+
+.notfound-container h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.notfound-container p {
+  font-size: 20px;
+  margin-bottom: 30px;
+  color: #f0f0f0;
+}
+
+.back-home-btn {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
+
+.back-home-btn:hover {
+  background-color: #0056b3;
+}
