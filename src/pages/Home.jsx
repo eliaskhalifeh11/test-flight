@@ -68,15 +68,11 @@ function LoginModal({ onClose }) {
 
 // Home Page
 function Home() {
-  
+  const [showLogin, setShowLogin] = useState(false);
+
   return (
     <div className="page-container">
-      {/* Login Button Top Right */}
-    
-
-
-   
-
+     
       {/* Hero Section */}
       <section className="hero-section">
         <div className="hero-overlay" />
@@ -95,19 +91,23 @@ function Home() {
           <h2 className="section-title">Why Choose SkyFly?</h2>
           <div className="features-grid">
             <div className="feature-card">
-              ✈️ <strong>Easy Booking</strong>
+              <img src="../assets/images/easy.png" alt="Easy Booking" className="feature-icon" />
+              <strong>Easy Booking</strong>
               <p>Quickly find and book flights with a few clicks.</p>
             </div>
             <div className="feature-card">
-              💸 <strong>Best Prices</strong>
+              <img src="../assets/images/bestprice.png" alt="Best Prices" className="feature-icon" />
+              <strong>Best Prices</strong>
               <p>Competitive pricing with no hidden fees.</p>
             </div>
             <div className="feature-card">
-              🌍 <strong>Global Destinations</strong>
+              <img src="/images/destinations.png" alt="Global Destinations" className="feature-icon" />
+              <strong>Global Destinations</strong>
               <p>Fly to thousands of cities worldwide.</p>
             </div>
           </div>
         </section>
+
       </ScrollAnimationWrapper>
 
       {/* Popular Destinations */}
@@ -119,6 +119,8 @@ function Home() {
             <DestinationCard city="Paris" imageUrl="https://source.unsplash.com/1600x900/?paris" />
             <DestinationCard city="Istanbul" imageUrl="https://source.unsplash.com/1600x900/?istanbul" />
             <DestinationCard city="New York" imageUrl="https://source.unsplash.com/1600x900/?newyork" />
+            <DestinationCard city="Tokyo" imageUrl="https://source.unsplash.com/1600x900/?tokyo,city" />
+            <DestinationCard city="Rome" imageUrl="https://source.unsplash.com/1600x900/?rome,travel" />
           </div>
         </section>
       </ScrollAnimationWrapper>
@@ -131,6 +133,15 @@ function Home() {
           <Testimonial name="Omar" feedback="Best flight booking experience ever." />
           <Testimonial name="Leila" feedback="I recommend SkyFly to all my friends." />
         </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="cta-section">
+        <h2>Ready to fly?</h2>
+        <p>Book your dream destination today!</p>
+        <Link to="/search">
+          <button className="cta-button">Book Now</button>
+        </Link>
       </section>
     </div>
   );
