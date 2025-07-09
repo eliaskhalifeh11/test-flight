@@ -1,10 +1,19 @@
-  import { useState } from "react";
-  import { Link } from "react-router-dom";
+  import { useEffect, useState } from "react";
+  import { Link, useLocation } from "react-router-dom";
+  import { useLocation } from "react-router-dom";
   import "../css/searchflights.css";
 
+
+  import mea from "../assets/images/MEAL.png";
+  import qatar from "../assets/images/qatarL.png";
+  import Emirates from "../assets/images/Emirates.png";
   
 
   function SearchFlights() {
+    const location = useLocation(); 
+    console.log(location.pathname);// 👈 Add this line
+    const query = new URLSearchParams(location.search );
+    const city = query.get("city"); 
     const [formData, setFormData] = useState({
       from: "",
       to: "",
@@ -14,6 +23,13 @@
       travelClass: "economy",
     });
 
+
+  useEffect(() => {
+    if (city) {
+      setFormData((prev) => ({ ...prev, to: city }));
+    }
+  }, [city]);
+
     const [tripType, setTripType] = useState("oneway");
     const [results, setResults] = useState([]);
     const [filterMaxPrice, setFilterMaxPrice] = useState("");
@@ -22,6 +38,7 @@
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [message, setMessage] = useState(""); // ✅ NEW state for feedback
+  
 
 
 

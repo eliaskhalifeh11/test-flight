@@ -7,23 +7,17 @@
 .hero-section {
   position: relative;
   height: 450px;
-  background-image: url("../assets/images/home.png");
-  background-size: cover;
-  background-position: center;
+  background: url("../assets/images/home3.png") center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   box-shadow: 0 10px 25px rgba(1, 18, 250, 0.4);
-  
 }
 
-.hero-title,
-.hero-subtitle,
-.hero-button {
+.hero-title, .hero-subtitle, .hero-button {
   text-shadow: 2px 2px 6px rgba(1, 28, 250, 0.6);
 }
-
 
 .hero-overlay {
   position: absolute;
@@ -56,14 +50,15 @@
   cursor: pointer;
   background-color: #007bff;
   color: white;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .hero-button:hover {
   background-color: #0056b3;
+  transform: scale(1.05);
 }
 
-.features-section {
+.features-section, .destinations-section, .testimonials-section {
   padding: 3rem 1rem;
   text-align: center;
 }
@@ -74,25 +69,59 @@
   color: #222;
 }
 
-.features-grid {
+.features-grid, .testimonials-grid {
   display: flex;
   justify-content: center;
   gap: 2rem;
   flex-wrap: wrap;
 }
 
-.feature-card {
-  flex: 1 1 250px;
-  background-color: #f1f1f1;
+.feature-card, .testimonial-card {
+  background-color: #f8f8f8;
+  border-radius: 10px;
   padding: 1.5rem;
-  border-radius: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-size: 1.1rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
 }
 
-.destinations-section {
-  padding: 3rem 1rem;
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.feature-card {
+  flex: 1 1 250px;
+  height: 250px; /* Set a height */
+  padding: 0;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+ box-shadow: 0 10px 25px rgba(1, 18, 250, 0.4);
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.feature-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Cover the full area */
+  display: block;
+}
+
+.feature-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
   text-align: center;
+}
+
+
+.destinations-section {
   background-color: #fafafa;
 }
 
@@ -105,15 +134,54 @@
 }
 
 .destination-card {
+  height: 200px; /* or any height you prefer */
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+.destination-card {
+  position: relative;
+  height: 200px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(1, 18, 250, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .destination-image {
   width: 100%;
-  height: 140px;
+  height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+.destination-name-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+
+
+
+.destination-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+}
+
+.destination-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* This ensures the image covers the box fully */
+  display: block;
 }
 
 .destination-name {
@@ -122,26 +190,9 @@
   font-weight: bold;
 }
 
-.testimonials-section {
-  padding: 3rem 1rem;
-  text-align: center;
-}
-
 .testimonials-grid {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
   max-width: 900px;
   margin: 0 auto;
-}
-
-.testimonial-card {
-  background-color: #f1f1f1;
-  border-radius: 15px;
-  padding: 1.5rem;
-  max-width: 300px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .testimonial-feedback {
@@ -154,90 +205,49 @@
   text-align: right;
 }
 
-/* Initial state */
 .animate-on-scroll {
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s ease-out, transform 0.6s ease-out;
 }
 
-/* Active state when visible */
 .animate-on-scroll.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Hover animation for Feature Cards */
-.feature-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-}
-
-/* Hover animation for Destination Cards */
-.destination-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.destination-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 12px 20px rgba(0,0,0,0.3);
-}
-
-/* Hover animation for Testimonial Cards */
-.testimonial-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.testimonial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-}
-
-.hero-button {
-  transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.hero-button:hover {
-  background-color: #0056b3;
-  transform: scale(1.05);
-}
-
-.top-right-login {
-  position: fixed;
-  top: 20px;
-  right: 30px;
-  z-index: 2000;
-}
-
-.login-button {
-  background-color: #1e1e1e;
+.cta-section {
+  text-align: center;
+  background: #0057b8;
   color: white;
+  padding: 40px 20px;
+  margin-top: 40px;
+}
+
+.cta-button {
+  background: white;
+  color: #0057b8;
+  padding: 12px 24px;
   border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  border-radius: 4px;
+  font-weight: bold;
+  border-radius: 8px;
+  margin-top: 15px;
   cursor: pointer;
 }
 
+.cta-button:hover {
+  background: #e1e1e1;
+}
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 3000;
+  z-index: 9999;
 }
 
 .modal {
@@ -245,17 +255,18 @@
   padding: 2rem;
   border-radius: 8px;
   width: 300px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
-.top-right-login {
+.top-right-login, .top-right-auth {
   position: fixed;
-  top: 15px;
-  right: 25px;
-  z-index: 9999;
+  top: 20px;
+  right: 30px;
+  z-index: 1000;
 }
 
-.login-button {
+.login-button, .signup-button {
   background-color: #1e1e1e;
   color: white;
   border: none;
@@ -263,61 +274,17 @@
   font-size: 1rem;
   border-radius: 5px;
   cursor: pointer;
-}
-
-/* Modal styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 300px;
-  text-align: center;
-}
-
-
-.top-right-auth {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
+  transition: background-color 0.3s ease;
 }
 
 .signup-button {
-  padding: 10px 18px;
-  background-color: #1e1e1e;
-  color: white;
   border: 2px solid white;
   border-radius: 8px;
-  text-decoration: none;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .signup-button:hover {
   background-color: white;
   color: #1e1e1e;
-}
-
-
-.top-right-auth {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
 }
 
 .signup-icon img {
@@ -330,52 +297,113 @@
 .signup-icon img:hover {
   transform: scale(1.1);
 }
-.destination-card {
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-.destination-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
 
 
-.cta-section {
-  text-align: center;
-  background: #0057b8;
-  color: white;
-  padding: 40px 20px;
-  margin-top: 40px;
-}
-.cta-button {
-  background: white;
-  color: #0057b8;
-  padding: 12px 24px;
-  border: none;
-  font-weight: bold;
-  border-radius: 8px;
-  margin-top: 15px;
-  cursor: pointer;
-}
-.cta-button:hover {
-  background: #e1e1e1;
+.home-layout {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
 }
 
-
-.feature-card {
-  background-color: #f8f8f8;
+.sidebar {
+  width: 250px;
+  background-color: #f4f4f4;
+  padding: 15px;
   border-radius: 10px;
-  padding: 1.5rem;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h3 {
+  margin-top: 0;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 10px 0;
+}
+
+.sidebar a,
+.sidebar button {
+  background: none;
+  border: none;
+  color: #0077cc;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+
+.sidebar {
+  width: 250px;
+  background: #f4f4f4;
+  padding: 20px;
+  border-radius: 10px;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.sidebar-profile {
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
+  margin-bottom: 20px;
 }
 
-.feature-card:hover {
-  transform: translateY(-5px);
-}
-
-.feature-icon {
+.sidebar-avatar {
   width: 60px;
   height: 60px;
-  margin-bottom: 1rem;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.sidebar h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.sidebar summary {
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding-left: 1rem;
+  margin: 0;
+}
+
+.sidebar li {
+  margin: 8px 0;
+}
+
+.sidebar a,
+.sidebar button.sidebar-action {
+  text-decoration: none;
+  color: #0077cc;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 5px;
+  display: block;
+  text-align: left;
+  width: 100%;
+}
+
+.sidebar a:hover,
+.sidebar button.sidebar-action:hover {
+  color: #0056a3;
+  background-color: #eaeaea;
+  border-radius: 5px;
 }
