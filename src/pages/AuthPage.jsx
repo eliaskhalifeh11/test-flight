@@ -5,65 +5,82 @@ import "../css/auth.css";
 function AuthPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
 
-  // Common states
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
-  const [error, setError] = useState("");
-
-  // Signup-specific states
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
-  // Validate full name - only letters and spaces allowed
   const isFullNameValid = (name) => /^[A-Za-z\s]+$/.test(name);
 
-  // Handle Login
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    const storedUsername = localStorage.getItem("username");
-    const storedPassword = localStorage.getItem("password");
-    const storedRole = localStorage.getItem("role");
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (username === storedUsername && password === storedPassword) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Login failed");
+        return;
+      }
+
       localStorage.setItem("loggedIn", "true");
-      setError("");
-      navigate(storedRole === "admin" ? "/admin" : "/dashboard");
-    } else {
-      setError("Invalid username or password");
+      localStorage.setItem("role", data.role);
+      navigate(data.role === "admin" ? "/admin" : "/dashboard");
+
+    } catch (err) {
+      setError("Server error. Try again later.");
     }
   };
 
-  // Handle Signup
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
 
     if (!isFullNameValid(fullName)) {
-      setError("Full Name must contain only letters and spaces, no numbers.");
+      setError("Full Name must contain only letters and spaces.");
       return;
     }
 
-    // Optional: you can add email format validation here
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName,
+          email,
+          username,
+          password,
+        }),
+      });
 
-    localStorage.setItem("fullName", fullName);
-    localStorage.setItem("email", email);
-    localStorage.setItem("username", username);
-    localStorage.setItem("password", password);
-    localStorage.setItem("role", role);
-    localStorage.setItem("loggedIn", "true");
+      const data = await response.json();
 
-    setError("");
-    navigate(role === "admin" ? "/admin" : "/dashboard");
+      if (!response.ok) {
+        setError(data.message || "Signup failed");
+        return;
+      }
+
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("role", data.role);
+      navigate(data.role === "admin" ? "/admin" : "/dashboard");
+
+    } catch (err) {
+      setError("Server error. Try again later.");
+    }
   };
 
   return (
     <div className="auth-page" style={{ maxWidth: "400px", margin: "50px auto" }}>
       <div className="auth-toggle" style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
         <button
-          className={isLoginMode ? "active" : ""}
           onClick={() => {
             setIsLoginMode(true);
             setError("");
@@ -80,7 +97,6 @@ function AuthPage() {
           Login
         </button>
         <button
-          className={!isLoginMode ? "active" : ""}
           onClick={() => {
             setIsLoginMode(false);
             setError("");
@@ -118,7 +134,9 @@ function AuthPage() {
             style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
           {error && <p style={{ color: "red" }}>{error}</p>}
-          <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px" }}>Login</button>
+          <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px" }}>
+            Login
+          </button>
         </form>
       ) : (
         <form onSubmit={handleSignup}>
@@ -139,14 +157,6 @@ function AuthPage() {
             onChange={(e) => setEmail(e.target.value)}
             style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-          >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
           <input
             type="text"
             placeholder="Username"
@@ -164,7 +174,9 @@ function AuthPage() {
             style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
           {error && <p style={{ color: "red" }}>{error}</p>}
-          <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px" }}>Sign Up</button>
+          <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px" }}>
+            Sign Up
+          </button>
         </form>
       )}
     </div>

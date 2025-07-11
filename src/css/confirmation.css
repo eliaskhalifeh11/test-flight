@@ -44,3 +44,16 @@ button {
 button:hover {
   background-color: #004d99;
 }
+
+.passenger-block {
+  background-color: #f9f9f9;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+}
+
+.confirmation-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 15px;
+}
