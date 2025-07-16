@@ -36,7 +36,7 @@ function ScrollAnimationWrapper({ children }) {
           setVisible(true);
           observer.unobserve(entry.target);
         }
-      });
+      }); 
     });
 
     if (domRef.current) {
