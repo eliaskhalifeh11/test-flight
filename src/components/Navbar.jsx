@@ -7,6 +7,8 @@ function Navbar() {
   const [adminOpen, setAdminOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+
 
   const navigate = useNavigate();
 
@@ -18,9 +20,11 @@ function Navbar() {
   useEffect(() => {
     const role = localStorage.getItem("role");
     const loggedIn = localStorage.getItem("loggedIn") === "true";
+    const storedUsername = localStorage.getItem("username");
 
     setIsLoggedIn(loggedIn);
     setIsAdmin(role === "admin");
+    setUsername(storedUsername);
   }, []);
 
   const handleLogout = () => {
@@ -43,7 +47,7 @@ function Navbar() {
           <Link to="/" onClick={closeMenus}>Home</Link>
           <Link to="/search" onClick={closeMenus}>Search Flights</Link>
 
-          {isAdmin && (
+        {isAdmin && (
             <div className="dropdown" onClick={() => setAdminOpen(!adminOpen)}>
               <span className="dropdown__toggle">Admin ▼</span>
               <div className={`dropdown__menu ${adminOpen ? "open" : ""}`}>
@@ -59,7 +63,7 @@ function Navbar() {
       <div className="navbar__auth">
               {isLoggedIn ? (
           <div className="navbar__user-info">
-            <span className="navbar__username">👤 {localStorage.getItem("username")}</span>
+            <span className="navbar__username">👤 {username}</span>
             <button className="logout-btn" onClick={handleLogout}>Logout</button>
           </div>
         ) : (

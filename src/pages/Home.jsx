@@ -178,7 +178,15 @@ function Home() {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-profile">
-          <img src="https://www.w3schools.com/howto/img_avatar.png" alt="User Avatar" className="sidebar-avatar" />
+          <Link to="../profile">
+            <img
+              src="https://www.w3schools.com/howto/img_avatar.png"
+              alt="User Avatar"
+              className="sidebar-avatar"
+              style={{ cursor: "pointer" }}
+            />
+          </Link>
+
           <h4>{localStorage.getItem("role") || "Guest"}</h4>
         </div>
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import "../css/auth.css";
 
 function AuthPage() {
@@ -19,13 +20,15 @@ function AuthPage() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+              const response = await fetch("https://localhost:7162/api/Auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
 
       const data = await response.json();
+      console.log(data);
 
       if (!response.ok) {
         setError(data.message || "Login failed");
@@ -34,7 +37,8 @@ function AuthPage() {
 
       localStorage.setItem("loggedIn", "true");
       localStorage.setItem("role", data.role);
-      navigate(data.role === "admin" ? "/admin" : "/dashboard");
+      localStorage.setItem("username", data.username);
+     navigate("/");
 
     } catch (err) {
       setError("Server error. Try again later.");
@@ -50,16 +54,17 @@ function AuthPage() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName,
-          email,
-          username,
-          password,
-        }),
-      });
+              const response = await fetch("https://localhost:7162/api/Auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName,
+            email,
+            username,
+            password,
+          }),
+        });
+
 
       const data = await response.json();
 
@@ -70,7 +75,7 @@ function AuthPage() {
 
       localStorage.setItem("loggedIn", "true");
       localStorage.setItem("role", data.role);
-      navigate(data.role === "admin" ? "/admin" : "/dashboard");
+      navigate("/");
 
     } catch (err) {
       setError("Server error. Try again later.");

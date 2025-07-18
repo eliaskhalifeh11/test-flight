@@ -85,7 +85,6 @@ select:focus {
 }
 
 button[type="submit"] {
-  padding: 14px;
   background-color: #007bff;
   border: none;
   border-radius: 10px;
@@ -96,6 +95,7 @@ button[type="submit"] {
   box-shadow: 0 4px 12px rgba(0,123,255,0.5);
   transition: background-color 0.3s ease;
   user-select: none;
+  height: 50px;
 }
 
 button[type="submit"]:hover {

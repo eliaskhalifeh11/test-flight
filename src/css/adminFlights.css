@@ -99,6 +99,7 @@ tr:hover {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  height: 50px;
 }
 
 .submit-btn:hover {

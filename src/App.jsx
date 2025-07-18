@@ -17,6 +17,7 @@ import Faq from "./pages/Faq";
 import ContactUs from "./pages/ContactUs";
 import About from './pages/About';
 import CustomerService from './pages/CustomerService';
+import Profile  from "./pages/profile";
 
 
 
@@ -39,6 +40,7 @@ function App() {
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="admin/flights" element={<AdminFlights />} />
             <Route path="admin/bookings" element={<AdminBookings />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
