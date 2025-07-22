@@ -14,43 +14,50 @@ import {
   Legend,
 } from "recharts";
 
-
 function AdminDashboard() {
-  const stats = {
-    totalFlights: 42,
-    totalUsers: 150,
-    totalBookings: 87,
-    totalRevenue: 12450,
-  };
+  const [stats, setStats] = useState({
+    totalFlights: 0,
+    totalUsers: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+  });
+  
+  const [recentBookings, setRecentBookings] = useState([]);
+  const [upcomingFlights, setUpcomingFlights] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
+  const [bookingData, setBookingData] = useState([]);
 
-  const recentBookings = [
-    { id: "B001", user: "John Doe", flight: "BEY → DXB", date: "2025-07-10", seats: 2 },
-    { id: "B002", user: "Sarah Lee", flight: "BEY → LHR", date: "2025-07-09", seats: 1 },
-    { id: "B003", user: "Ali Hammoud", flight: "BEY → CDG", date: "2025-07-08", seats: 3 },
-  ];
+  useEffect(() => {
+    // Fetch stats
+    fetch("/api/stats")
+      .then((res) => res.json())
+      .then((data) => setStats(data))
+      .catch((err) => console.error("Error fetching stats:", err));
 
-  const upcomingFlights = [
-    { id: "F101", from: "BEY", to: "DXB", date: "2025-07-13", time: "14:30" },
-    { id: "F102", from: "BEY", to: "IST", date: "2025-07-14", time: "10:15" },
-    { id: "F103", from: "BEY", to: "FRA", date: "2025-07-15", time: "09:45" },
-  ];
+    // Fetch recent bookings
+    fetch("/api/bookings/recent")
+      .then((res) => res.json())
+      .then((data) => setRecentBookings(data))
+      .catch((err) => console.error("Error fetching recent bookings:", err));
 
-  const revenueData = [
-  { month: "Jan", revenue: 1000 },
-  { month: "Feb", revenue: 1800 },
-  { month: "Mar", revenue: 2500 },
-  { month: "Apr", revenue: 3100 },
-  { month: "May", revenue: 2200 },
-  { month: "Jun", revenue: 3600 },
-];
+    // Fetch upcoming flights
+    fetch("/api/flights/upcoming")
+      .then((res) => res.json())
+      .then((data) => setUpcomingFlights(data))
+      .catch((err) => console.error("Error fetching upcoming flights:", err));
 
-const bookingData = [
-  { flight: "BEY-DXB", bookings: 25 },
-  { flight: "BEY-LHR", bookings: 18 },
-  { flight: "BEY-CDG", bookings: 32 },
-  { flight: "BEY-IST", bookings: 20 },
-];
+    // Fetch monthly revenue data
+    fetch("/api/revenue/monthly")
+      .then((res) => res.json())
+      .then((data) => setRevenueData(data))
+      .catch((err) => console.error("Error fetching revenue data:", err));
 
+    // Fetch bookings per flight
+    fetch("/api/bookings/by-flight")
+      .then((res) => res.json())
+      .then((data) => setBookingData(data))
+      .catch((err) => console.error("Error fetching booking data:", err));
+  }, []);
 
   return (
     <div className="dashboard-container">
@@ -132,40 +139,45 @@ const bookingData = [
             ))}
           </tbody>
         </table>
+      </div>
 
-        {/* Charts Section */}
-<div className="section">
-  <h2>Monthly Revenue</h2>
-  <ResponsiveContainer width="100%" height={300}>
-    <LineChart data={revenueData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="month" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Line type="monotone" dataKey="revenue" stroke="#007bff" strokeWidth={2} />
-    </LineChart>
-  </ResponsiveContainer>
-</div>
+      {/* Charts Section */}
+      <div className="section">
+        <h2>Monthly Revenue</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart
+            data={revenueData}
+            margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="revenue"
+              stroke="#007bff"
+              strokeWidth={2}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
-<div className="section">
-  <h2>Bookings per Flight</h2>
-  <ResponsiveContainer width="100%" height={300}>
-    <BarChart data={bookingData}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="flight" />
-      <YAxis />
-      <Tooltip />
-      <Legend />
-      <Bar dataKey="bookings" fill="#28a745" />
-    </BarChart>
-  </ResponsiveContainer>
-</div>
-
+      <div className="section">
+        <h2>Bookings per Flight</h2>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={bookingData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="flight" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="bookings" fill="#28a745" />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
-
-    
   );
 }
 
