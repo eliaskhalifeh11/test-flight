@@ -21,43 +21,52 @@ function AdminDashboard() {
     totalBookings: 0,
     totalRevenue: 0,
   });
-  
+
   const [recentBookings, setRecentBookings] = useState([]);
   const [upcomingFlights, setUpcomingFlights] = useState([]);
   const [revenueData, setRevenueData] = useState([]);
   const [bookingData, setBookingData] = useState([]);
 
+  // Optional: loading and error states
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    // Fetch stats
-    fetch("/api/stats")
-      .then((res) => res.json())
-      .then((data) => setStats(data))
-      .catch((err) => console.error("Error fetching stats:", err));
+    setLoading(true);
+    setError(null);
 
-    // Fetch recent bookings
-    fetch("/api/bookings/recent")
-      .then((res) => res.json())
-      .then((data) => setRecentBookings(data))
-      .catch((err) => console.error("Error fetching recent bookings:", err));
-
-    // Fetch upcoming flights
-    fetch("/api/flights/upcoming")
-      .then((res) => res.json())
-      .then((data) => setUpcomingFlights(data))
-      .catch((err) => console.error("Error fetching upcoming flights:", err));
-
-    // Fetch monthly revenue data
-    fetch("/api/revenue/monthly")
-      .then((res) => res.json())
-      .then((data) => setRevenueData(data))
-      .catch((err) => console.error("Error fetching revenue data:", err));
-
-    // Fetch bookings per flight
-    fetch("/api/bookings/by-flight")
-      .then((res) => res.json())
-      .then((data) => setBookingData(data))
-      .catch((err) => console.error("Error fetching booking data:", err));
+    Promise.all([
+      fetch("https://localhost:7162/api/Dashboard/stats").then((res) => res.json()),
+      fetch("https://localhost:7162/api/Dashboard/recent-bookings").then((res) => res.json()),
+      fetch("https://localhost:7162/api/Dashboard/upcoming-flights").then((res) => res.json()),
+      fetch("https://localhost:7162/api/Dashboard/monthly-revenue").then((res) => res.json()),
+      fetch("https://localhost:7162/api/Dashboard/bookings-per-flight").then((res) => res.json()),
+    ])
+      .then(
+        ([
+          statsData,
+          recentBookingsData,
+          upcomingFlightsData,
+          revenueDataResp,
+          bookingDataResp,
+        ]) => {
+          setStats(statsData);
+          setRecentBookings(recentBookingsData);
+          setUpcomingFlights(upcomingFlightsData);
+          setRevenueData(revenueDataResp);
+          setBookingData(bookingDataResp);
+          setLoading(false);
+        }
+      )
+      .catch((err) => {
+        console.error("Error fetching dashboard data:", err);
+        setError("Failed to load dashboard data.");
+        setLoading(false);
+      });
   }, []);
+
+  if (loading) return <div className="dashboard-container">Loading...</div>;
+  if (error) return <div className="dashboard-container">Error: {error}</div>;
 
   return (
     <div className="dashboard-container">
