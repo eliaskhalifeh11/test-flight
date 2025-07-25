@@ -127,3 +127,25 @@ p.error-msg {
     font-size: 1rem;
   }
 }
+
+
+.password-field {
+  position: relative;
+  display: flex;
+}
+
+.password-field input {
+  flex: 1;
+}
+
+.toggle-pass {
+  position: absolute;
+  right: 10px;
+  margin-top: 0.4rem;
+  background: none;
+  border: none;
+  font-weight: 600;
+  color: #007bff;
+  cursor: pointer;
+  user-select: none;
+}

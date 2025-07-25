@@ -5,12 +5,21 @@ import "../css/auth.css";
 
 function AuthPage() {
   const [isLoginMode, setIsLoginMode] = useState(true);
-
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+
+  // Login states
+  const [loginUsername, setLoginUsername] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  // Signup states
+  const [signupFullName, setSignupFullName] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupUsername, setSignupUsername] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+
+  // Password visibility
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -18,27 +27,35 @@ function AuthPage() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
-              const response = await fetch("https://localhost:7162/api/Auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password }),
-        });
-
+      const response = await fetch("https://localhost:7162/api/Auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: loginUsername,
+          password: loginPassword,
+        }),
+      });
 
       const data = await response.json();
-      console.log(data);
-
-      if (!response.ok) {
+     if (!response.ok) {
         setError(data.message || "Login failed");
         return;
       }
 
+
+        localStorage.setItem("user", JSON.stringify({
+          id: data.user_id,           // <== this line added
+          username: data.username,
+          role: data.role,
+          token: data.token
+        }));
+
+
+
       localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("role", data.role);
-      localStorage.setItem("username", data.username);
-     navigate("/");
+      navigate("/");
+
 
     } catch (err) {
       setError("Server error. Try again later.");
@@ -47,27 +64,24 @@ function AuthPage() {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-
-    if (!isFullNameValid(fullName)) {
+    if (!isFullNameValid(signupFullName)) {
       setError("Full Name must contain only letters and spaces.");
       return;
     }
 
     try {
-              const response = await fetch("https://localhost:7162/api/Auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fullName,
-            email,
-            username,
-            password,
-          }),
-        });
-
+      const response = await fetch("https://localhost:7162/api/Auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: signupFullName,
+          email: signupEmail,
+          username: signupUsername,
+          password: signupPassword,
+        }),
+      });
 
       const data = await response.json();
-
       if (!response.ok) {
         setError(data.message || "Signup failed");
         return;
@@ -76,28 +90,20 @@ function AuthPage() {
       localStorage.setItem("loggedIn", "true");
       localStorage.setItem("role", data.role);
       navigate("/");
-
     } catch (err) {
       setError("Server error. Try again later.");
     }
   };
 
   return (
-    <div className="auth-page" style={{ maxWidth: "400px", margin: "50px auto" }}>
-      <div className="auth-toggle" style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
+    <div className="auth-page">
+      <div className="auth-toggle">
         <button
           onClick={() => {
             setIsLoginMode(true);
             setError("");
           }}
-          style={{
-            padding: "8px 16px",
-            cursor: "pointer",
-            backgroundColor: isLoginMode ? "#007bff" : "#ddd",
-            color: isLoginMode ? "white" : "black",
-            border: "none",
-            borderRadius: "5px"
-          }}
+          className={isLoginMode ? "active" : ""}
         >
           Login
         </button>
@@ -106,14 +112,7 @@ function AuthPage() {
             setIsLoginMode(false);
             setError("");
           }}
-          style={{
-            padding: "8px 16px",
-            cursor: "pointer",
-            backgroundColor: !isLoginMode ? "#007bff" : "#ddd",
-            color: !isLoginMode ? "white" : "black",
-            border: "none",
-            borderRadius: "5px"
-          }}
+          className={!isLoginMode ? "active" : ""}
         >
           Sign Up
         </button>
@@ -125,23 +124,28 @@ function AuthPage() {
           <input
             type="text"
             placeholder="Username"
+            value={loginUsername}
+            onChange={(e) => setLoginUsername(e.target.value)}
             required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-          />
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px" }}>
-            Login
-          </button>
+          <div className="password-field">
+            <input
+              type={showLoginPassword ? "text" : "password"}
+              placeholder="Password"
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="toggle-pass"
+              onClick={() => setShowLoginPassword((prev) => !prev)}
+            >
+              {showLoginPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+          {error && <p className="error-msg">{error}</p>}
+          <button type="submit">Login</button>
         </form>
       ) : (
         <form onSubmit={handleSignup}>
@@ -149,39 +153,42 @@ function AuthPage() {
           <input
             type="text"
             placeholder="Full Name"
+            value={signupFullName}
+            onChange={(e) => setSignupFullName(e.target.value)}
             required
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
           <input
             type="email"
             placeholder="Email"
+            value={signupEmail}
+            onChange={(e) => setSignupEmail(e.target.value)}
             required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
           <input
             type="text"
             placeholder="Username"
+            value={signupUsername}
+            onChange={(e) => setSignupUsername(e.target.value)}
             required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
-          />
-          {error && <p style={{ color: "red" }}>{error}</p>}
-          <button type="submit" style={{ width: "100%", padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px" }}>
-            Sign Up
-          </button>
+          <div className="password-field">
+            <input
+              type={showSignupPassword ? "text" : "password"}
+              placeholder="Password"
+              value={signupPassword}
+              onChange={(e) => setSignupPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              className="toggle-pass"
+              onClick={() => setShowSignupPassword((prev) => !prev)}
+            >
+              {showSignupPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+          {error && <p className="error-msg">{error}</p>}
+          <button type="submit">Sign Up</button>
         </form>
       )}
     </div>

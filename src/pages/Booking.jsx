@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../css/booking.css";
-
 
 const SEAT_ROWS = 6;
 const SEAT_COLUMNS = 4;
@@ -11,49 +10,69 @@ function Booking() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Mock flight data - replace with real data source
-  const flightDetails = {
-    flightNumber: "SKY123",
-    origin: "New York (JFK)",
-    destination: "Dubai (DXB)",
-    date: "2025-07-20",
-    time: "10:30 AM",
-    pricePerSeat: 350, // price per passenger seat
-  };
+  const [flightDetails, setFlightDetails] = useState(null);
+  const [error, setError] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user.id; 
 
-  // Passenger info states for multiple passengers
+
+  useEffect(() => {
+    console.log("Booking ID:", id);
+
+    const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+    if (!isLoggedIn) {
+      alert("You must be logged in to book a flight.");
+      navigate("/auth");
+      return;
+    }
+
+    const fetchFlightDetails = async () => {
+      try {
+        
+        const res = await fetch(`https://localhost:7162/api/Flight/${id}`);
+        if (!res.ok) throw new Error("Failed to load flight details");
+        const data = await res.json();
+        setFlightDetails(data);
+      } catch (err) {
+        console.error(err);
+        setError("Unable to load flight details.");
+      }
+    };
+
+    fetchFlightDetails();
+  }, [id, navigate]);
+
+  if (!flightDetails) {
+    return <div style={{ padding: 20 }}>Loading flight details...</div>;
+  }
+
   const [passengers, setPassengers] = useState([
     { fullName: "", age: "", passportNumber: "", email: "" },
   ]);
 
   const [selectedSeats, setSelectedSeats] = useState([]);
-  const [error, setError] = useState("");
 
-  // Handle input change for passengers array
   const handlePassengerChange = (index, field, value) => {
     const updatedPassengers = [...passengers];
     if (field === "fullName") {
-      // Prevent digits in name
       value = value.replace(/[0-9]/g, "");
     }
     updatedPassengers[index][field] = value;
     setPassengers(updatedPassengers);
   };
 
-  // Add passenger form fields dynamically
   const addPassenger = () => {
-    setPassengers([...passengers, { fullName: "", age: "", passportNumber: "", email: "" }]);
+    setPassengers([
+      ...passengers,
+      { fullName: "", age: "", passportNumber: "", email: "" },
+    ]);
   };
 
-  // Remove passenger by index
   const removePassenger = (index) => {
-    if (passengers.length === 1) return; // at least 1 passenger
+    if (passengers.length === 1) return;
     setPassengers(passengers.filter((_, i) => i !== index));
-    // Also remove seat if selected for that passenger
-    // Note: You might want to implement this in a more sophisticated way matching passenger-seat pairs
   };
 
-  // Toggle seat selection but restrict max seats = number of passengers
   const toggleSeat = (seat) => {
     if (selectedSeats.includes(seat)) {
       setSelectedSeats(selectedSeats.filter((s) => s !== seat));
@@ -66,58 +85,67 @@ function Booking() {
     }
   };
 
-  // Validate form before submission
-  const handleBooking = (e) => {
-    e.preventDefault();
+const handleBooking = async (e) => {
+  e.preventDefault();
 
-    // Validate all passenger fields
-    for (let i = 0; i < passengers.length; i++) {
-      const p = passengers[i];
-      if (!p.fullName || !p.age || !p.passportNumber || !p.email) {
-        setError(`Please fill all details for passenger #${i + 1}`);
-        return;
-      }
-      if (isNaN(p.age) || p.age <= 0) {
-        setError(`Please enter a valid age for passenger #${i + 1}`);
-        return;
-      }
-    }
-
-    if (selectedSeats.length !== passengers.length) {
-      setError("Please select exactly one seat per passenger");
+  for (let i = 0; i < passengers.length; i++) {
+    const p = passengers[i];
+    if (!p.fullName || !p.age || !p.passportNumber || !p.email) {
+      setError(`Please fill all details for passenger #${i + 1}`);
       return;
     }
+    if (isNaN(p.age) || p.age <= 0) {
+      setError(`Please enter a valid age for passenger #${i + 1}`);
+      return;
+    }
+  }
 
-    setError("");
+  if (selectedSeats.length !== passengers.length) {
+    setError("Please select exactly one seat per passenger");
+    return;
+  }
 
-    // Here you would send the booking to the backend
+  setError("");
 
-    alert(
-      `Booking confirmed for ${passengers.length} passenger(s).\nSeats: ${selectedSeats.join(
-        ", "
-      )}\nTotal Price: $${flightDetails.pricePerSeat * selectedSeats.length}`
-    );
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !user.id) {
+    setError("User not logged in.");
+    return;
+  }
 
-    navigate("/confirmation");
+  const postData = {
+    user_id: user.id,
+    flight_id: parseInt(id),
+    total_price: flightDetails.pricePerSeat * selectedSeats.length,
+    booking_status: "Pending",
+    seat_count: selectedSeats.length,
   };
 
+  try {
+    const res = await fetch("https://localhost:7162/api/Booking", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user.token}`,
+      },
+      body: JSON.stringify(postData),
+    });
+
+    if (!res.ok) throw new Error("Failed to complete booking");
+
+    const confirmation = await res.json();
+    navigate(`/confirmation?bookingId=${confirmation.booking_id}`);
+  } catch (err) {
+    setError("Booking failed. Please try again.");
+    console.error(err);
+  }
+};
+
   return (
-    <div
-      className="booking-page"
-      style={{ maxWidth: 700, margin: "40px auto", padding: "0 20px" }}
-    >
+    <div className="booking-page">
       <h2>Booking for Flight ID: {id}</h2>
 
-      <section
-        className="flight-details"
-        style={{
-          backgroundColor: "#f3f4f6",
-          padding: "15px 20px",
-          borderRadius: "8px",
-          marginBottom: "25px",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-        }}
-      >
+      <section className="flight-details">
         <h3>Flight Details</h3>
         <p>
           <strong>Flight Number:</strong> {flightDetails.flightNumber}
@@ -145,20 +173,9 @@ function Booking() {
         </p>
       </section>
 
-      <form
-        onSubmit={handleBooking}
-        style={{ display: "flex", flexDirection: "column", gap: "20px" }}
-      >
+      <form onSubmit={handleBooking}>
         {passengers.map((p, i) => (
-          <fieldset
-            key={i}
-            style={{
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              padding: "10px 15px",
-              position: "relative",
-            }}
-          >
+          <fieldset key={i}>
             <legend>Passenger #{i + 1}</legend>
 
             <label>
@@ -205,18 +222,8 @@ function Booking() {
             {passengers.length > 1 && (
               <button
                 type="button"
+                className="remove-passenger-btn"
                 onClick={() => removePassenger(i)}
-                style={{
-                  position: "absolute",
-                  top: 5,
-                  right: 10,
-                  backgroundColor: "red",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  padding: "2px 8px",
-                }}
                 aria-label={`Remove passenger #${i + 1}`}
               >
                 X
@@ -225,34 +232,13 @@ function Booking() {
           </fieldset>
         ))}
 
-        <button
-          type="button"
-          onClick={addPassenger}
-          style={{
-            backgroundColor: "#28a745",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            padding: "10px 15px",
-            cursor: "pointer",
-            fontWeight: "600",
-          }}
-        >
+        <button type="button" className="add-passenger-btn" onClick={addPassenger}>
           Add Passenger
         </button>
 
         <div>
           <h3>Select Your Seat(s)</h3>
-          <div
-            className="seat-map"
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${SEAT_COLUMNS}, 50px)`,
-              gap: "10px",
-              marginTop: "10px",
-              marginBottom: "20px",
-            }}
-          >
+          <div className="seat-map">
             {Array.from({ length: SEAT_ROWS }).map((_, rowIndex) => {
               return SEAT_LETTERS.map((letter) => {
                 const seat = `${rowIndex + 1}${letter}`;
@@ -262,18 +248,8 @@ function Booking() {
                   <button
                     type="button"
                     key={seat}
+                    className={`seat-button ${selected ? "selected" : ""}`}
                     onClick={() => toggleSeat(seat)}
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 8,
-                      border: selected ? "3px solid #007bff" : "1.5px solid #ccc",
-                      backgroundColor: selected ? "#cce5ff" : "#f9f9f9",
-                      cursor: "pointer",
-                      fontWeight: "700",
-                      userSelect: "none",
-                      transition: "all 0.25s ease",
-                    }}
                     aria-pressed={selected}
                     aria-label={`Seat ${seat}`}
                   >
@@ -285,27 +261,9 @@ function Booking() {
           </div>
         </div>
 
-        {error && (
-          <p style={{ color: "red", fontWeight: "600", textAlign: "center" }}>
-            {error}
-          </p>
-        )}
+        {error && <p className="error-msg">{error}</p>}
 
-        <button
-          type="submit"
-          style={{
-            padding: "14px",
-            backgroundColor: "#007bff",
-            border: "none",
-            borderRadius: "8px",
-            color: "white",
-            fontSize: "1.2rem",
-            fontWeight: "700",
-            cursor: "pointer",
-            boxShadow: "0 4px 12px rgba(0,123,255,0.5)",
-            transition: "background-color 0.3s ease",
-          }}
-        >
+        <button type="submit" className="submit-btn">
           Confirm Booking
         </button>
       </form>

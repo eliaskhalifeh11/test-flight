@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../css/searchflights.css";
 
 import mea from "../assets/images/MEAL.png";
@@ -30,27 +30,19 @@ function SearchFlights() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [minDateTime, setMinDateTime] = useState("");
-  const departureDate = new Date(formData.departureDate);
-  const formattedDate = formatDateToYYYYMMDD(departureDate);
-  console.log(formattedDate); // e.g., "2025-07-23"
-
-  
+  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
+  const navigate = useNavigate();
 
   function formatDateToYYYYMMDD(date) {
-  const d = new Date(date);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-
- 
-
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
   useEffect(() => {
     if (city) {
-      // Try to find matching airport code by city substring (case-insensitive)
       const found = airports.find(
         (a) =>
           a.airport_name.toLowerCase().includes(city.toLowerCase()) ||
@@ -78,8 +70,17 @@ function SearchFlights() {
 
     const now = new Date();
     now.setSeconds(0, 0);
-    setMinDateTime(now.toISOString().slice(0, 10)); // yyyy-mm-dd
+    setMinDateTime(now.toISOString().slice(0, 10));
   }, []);
+
+  const handleBook = (flightId) => {
+    if (isLoggedIn) {
+      navigate(`/booking/${flightId}`);
+    } else {
+      alert("Please log in to book a flight.");
+      navigate("/auth");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,13 +95,12 @@ function SearchFlights() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    console.log("Searching flights with", formData);
     setError("");
     setMessage("");
     setLoading(true);
     setResults([]);
 
-    if (formData.from.trim().toLowerCase() === formData.to.trim().toLowerCase()) {
+    if (formData.from === formData.to) {
       setLoading(false);
       return setError("Departure and arrival airports cannot be the same.");
     }
@@ -113,11 +113,6 @@ function SearchFlights() {
     const now = new Date();
     const departure = new Date(formData.departureDate);
     const arrival = new Date(formData.returnDate);
-
-    if (departure < now) {
-      setLoading(false);
-      return setError("Departure date cannot be in the past.");
-    }
 
     if (tripType === "roundtrip") {
       if (!formData.returnDate) {
@@ -135,14 +130,26 @@ function SearchFlights() {
     }
 
     try {
-     const formattedDate = formatDateToYYYYMMDD(formData.departureDate);
+      const formattedDate = formatDateToYYYYMMDD(formData.departureDate);
 
-      const res = await fetch(
-        `https://localhost:7162/api/Flight/search?from=${formData.from}&to=${formData.to}&departureDate=${formattedDate}`
-      );
+     const res = await fetch(
+      `https://localhost:7162/api/Flight/search?fromAirportId=${formData.from}&toAirportId=${formData.to}&departureDate=${formattedDate}`
+    );
+
 
       if (!res.ok) throw new Error("Server error");
       const data = await res.json();
+
+      // Add dummy flight manually (for testing)
+      data.push({
+        id: 30111,
+        flightNumber: "TEST123",
+        airline: "MEA Airways",
+        departure: "Beirut International Airport",
+        arrival: "Doha Hamad Airport",
+        time: "10:00 - 12:00",
+        price: 100,
+      });
 
       const finalResults = data.map((f) => ({
         ...f,
@@ -150,11 +157,7 @@ function SearchFlights() {
       }));
 
       setResults(finalResults);
-      if (finalResults.length > 0) {
-        setMessage("✅ Flights loaded successfully.");
-      } else {
-        setMessage("No flights found for the selected route.");
-      }
+      setMessage(finalResults.length ? "✅ Flights loaded successfully." : "No flights found for the selected route.");
     } catch (err) {
       console.error(err);
       setError("Failed to fetch flights. Please try again.");
@@ -162,12 +165,12 @@ function SearchFlights() {
       setLoading(false);
     }
   };
-  
+
   const filteredSortedResults = results
     .filter((flight) => {
-    if (filterMaxPrice && flight.price > Number(filterMaxPrice)) return false;
-    if (filterAirline && flight.airline !== filterAirline) return false;
-    return true;
+      if (filterMaxPrice && flight.price > Number(filterMaxPrice)) return false;
+      if (filterAirline && flight.airline !== filterAirline) return false;
+      return true;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -176,15 +179,9 @@ function SearchFlights() {
         case "price-desc":
           return b.price - a.price;
         case "time-asc":
-          return (
-            new Date("1970/01/01 " + a.time.split(" - ")[0]) -
-            new Date("1970/01/01 " + b.time.split(" - ")[0])
-          );
+          return new Date("1970/01/01 " + a.time.split(" - ")[0]) - new Date("1970/01/01 " + b.time.split(" - ")[0]);
         case "time-desc":
-          return (
-            new Date("1970/01/01 " + b.time.split(" - ")[0]) -
-            new Date("1970/01/01 " + a.time.split(" - ")[0])
-          );
+          return new Date("1970/01/01 " + b.time.split(" - ")[0]) - new Date("1970/01/01 " + a.time.split(" - ")[0]);
         default:
           return 0;
       }
@@ -207,12 +204,7 @@ function SearchFlights() {
     }
   };
 
-const serverDate = "2025-07-23T00:00:00Z";
-const inputValue = formatDateToYYYYMMDD(new Date(serverDate)); // sets "2025-07-23"
-
-
   return (
-    
     <div className="search-flights-container">
       <h1>Search Flights</h1>
 
@@ -253,7 +245,7 @@ const inputValue = formatDateToYYYYMMDD(new Date(serverDate)); // sets "2025-07-
               </option>
             ))}
           </select>
-          </label>
+        </label>
 
         <label>
           To:
@@ -352,20 +344,12 @@ const inputValue = formatDateToYYYYMMDD(new Date(serverDate)); // sets "2025-07-
         </label>
 
         <button
+          className="reset-button"
           onClick={() => {
             setFilterMaxPrice("");
             setFilterAirline("");
             setSortBy("price-asc");
           }}
-          style={{
-            padding: "0.5rem 1rem",
-            backgroundColor: "#0077cc",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-          type="button"
         >
           Reset Filters
         </button>
@@ -397,9 +381,11 @@ const inputValue = formatDateToYYYYMMDD(new Date(serverDate)); // sets "2025-07-
               </p>
               <p>{flight.time}</p>
               <p>Price: ${flight.price.toFixed(2)}</p>
-              <Link to={`/booking/${flight.id}`}>
-                <button>Book</button>
-              </Link>
+              {isLoggedIn ? (
+                <button onClick={() => handleBook(flight.id)}>Book</button>
+              ) : (
+                <button onClick={() => navigate("/auth")}>Login to Book</button>
+              )}
             </div>
           ))
         ) : (
@@ -408,7 +394,6 @@ const inputValue = formatDateToYYYYMMDD(new Date(serverDate)); // sets "2025-07-
       </div>
     </div>
   );
-  
 }
 
 export default SearchFlights;
