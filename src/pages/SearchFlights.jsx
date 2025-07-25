@@ -140,21 +140,19 @@ function SearchFlights() {
       if (!res.ok) throw new Error("Server error");
       const data = await res.json();
 
-      // Add dummy flight manually (for testing)
-      data.push({
-        id: 30111,
-        flightNumber: "TEST123",
-        airline: "MEA Airways",
-        departure: "Beirut International Airport",
-        arrival: "Doha Hamad Airport",
-        time: "10:00 - 12:00",
-        price: 100,
-      });
 
-      const finalResults = data.map((f) => ({
+      const finalResults = data.map((f) => {
+      const hours = Math.floor(f.DurationMinutes / 60);
+      const minutes = f.DurationMinutes % 60;
+      return {
         ...f,
+        scheduleDeparture: f.ScheduleDeparture,
+        scheduleArrival: f.ScheduleArrival,
+        duration: `${hours}h ${minutes}m`,
         price: f.Price * formData.passengers * classPriceMultiplier[formData.travelClass],
-      }));
+      };
+    });
+
 
       setResults(finalResults);
       setMessage(finalResults.length ? "✅ Flights loaded successfully." : "No flights found for the selected route.");
@@ -379,8 +377,15 @@ function SearchFlights() {
               <p>
                 {flight.departure} → {flight.arrival}
               </p>
-              <p>{flight.time}</p>
-              <p>Price: ${flight.price.toFixed(2)}</p>
+              <p>🕒 {flight.time}</p>
+              <p>🛫 Departure: {new Date(flight.scheduleDeparture).toLocaleString()}</p>
+              <p>🛬 Arrival: {new Date(flight.scheduleArrival).toLocaleString()}</p>
+              <p>⏱️ Duration: {flight.duration}</p>
+              <p>💰 Total Price: ${flight.price.toFixed(2)}</p>
+              <p>🧍 Passengers: {formData.passengers}</p>
+              <p>💺 Class: {formData.travelClass.charAt(0).toUpperCase() + formData.travelClass.slice(1)}</p>
+
+
               {isLoggedIn ? (
                 <button onClick={() => handleBook(flight.id)}>Book</button>
               ) : (
