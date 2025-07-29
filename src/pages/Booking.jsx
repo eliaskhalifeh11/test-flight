@@ -3,32 +3,37 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../css/booking.css";
 
 const SEAT_ROWS = 6;
-const SEAT_COLUMNS = 4;
 const SEAT_LETTERS = ["A", "B", "C", "D"];
 
 function Booking() {
-  const { id } = useParams();
+  const { id } = useParams(); // flight_id
   const navigate = useNavigate();
 
+  const [airports, setAirports] = useState([]);
   const [flightDetails, setFlightDetails] = useState(null);
   const [error, setError] = useState("");
-  const user = JSON.parse(localStorage.getItem("user"));
-  const userId = user.id; 
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+  const [bookingId, setBookingId] = useState(null);
+  const [totalPrice, setTotalPrice] = useState(0);
 
+  const [passengers, setPassengers] = useState([
+    { fullName: "", age: "", passportNumber: "", email: "", phone: "", address: "" },
+  ]);
+  const [selectedSeats, setSelectedSeats] = useState([]);
 
   useEffect(() => {
-    console.log("Booking ID:", id);
-
     const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-    if (!isLoggedIn) {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!isLoggedIn || !user) {
       alert("You must be logged in to book a flight.");
       navigate("/auth");
       return;
     }
 
+    // Fetch flight details
     const fetchFlightDetails = async () => {
       try {
-        
         const res = await fetch(`https://localhost:7162/api/Flight/${id}`);
         if (!res.ok) throw new Error("Failed to load flight details");
         const data = await res.json();
@@ -40,23 +45,16 @@ function Booking() {
     };
 
     fetchFlightDetails();
+
+    // Fetch airports
+    fetch("https://localhost:7162/api/Airport")
+      .then((res) => res.json())
+      .then(setAirports)
+      .catch((err) => console.error("Failed to fetch airports", err));
   }, [id, navigate]);
-
-  if (!flightDetails) {
-    return <div style={{ padding: 20 }}>Loading flight details...</div>;
-  }
-
-  const [passengers, setPassengers] = useState([
-    { fullName: "", age: "", passportNumber: "", email: "" },
-  ]);
-
-  const [selectedSeats, setSelectedSeats] = useState([]);
 
   const handlePassengerChange = (index, field, value) => {
     const updatedPassengers = [...passengers];
-    if (field === "fullName") {
-      value = value.replace(/[0-9]/g, "");
-    }
     updatedPassengers[index][field] = value;
     setPassengers(updatedPassengers);
   };
@@ -64,7 +62,7 @@ function Booking() {
   const addPassenger = () => {
     setPassengers([
       ...passengers,
-      { fullName: "", age: "", passportNumber: "", email: "" },
+      { fullName: "", age: "", passportNumber: "", email: "", phone: "", address: "" },
     ]);
   };
 
@@ -85,17 +83,22 @@ function Booking() {
     }
   };
 
-const handleBooking = async (e) => {
+  const handleBooking = async (e) => {
   e.preventDefault();
+  setError("");
 
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) {
+    setError("User not logged in.");
+    return;
+  }
+
+  // Validate required passenger fields only
   for (let i = 0; i < passengers.length; i++) {
     const p = passengers[i];
-    if (!p.fullName || !p.age || !p.passportNumber || !p.email) {
-      setError(`Please fill all details for passenger #${i + 1}`);
-      return;
-    }
-    if (isNaN(p.age) || p.age <= 0) {
-      setError(`Please enter a valid age for passenger #${i + 1}`);
+    if (!p.passportNumber || !p.phone || !p.address) {
+      setError(`Please fill passport number, phone, and address for passenger #${i + 1}`);
       return;
     }
   }
@@ -105,41 +108,44 @@ const handleBooking = async (e) => {
     return;
   }
 
-  setError("");
-
-  const user = JSON.parse(localStorage.getItem("user"));
-  if (!user || !user.id) {
-    setError("User not logged in.");
-    return;
-  }
-
-  const postData = {
-    user_id: user.id,
-    flight_id: parseInt(id),
-    total_price: flightDetails.pricePerSeat * selectedSeats.length,
-    booking_status: "Pending",
-    seat_count: selectedSeats.length,
-  };
-
   try {
-    const res = await fetch("https://localhost:7162/api/Booking", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`,
-      },
-      body: JSON.stringify(postData),
-    });
+   
+    const passengerPayload = passengers.map((p) => ({
+      user_id: user.user_id,
+      passport_number: p.passportNumber,
+      phone: p.phone,
+      address: p.address,
+    }));
 
-    if (!res.ok) throw new Error("Failed to complete booking");
+    
+    for (const p of passengerPayload) {
+      await fetch("https://localhost:7162/api/Passenger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: p.user_id,
+          booking_id: bookingId,
+          passport_number: p.passport_number,
+          phone: p.phone,
+          address: p.address,
+        }),
+      });
+    }
 
-    const confirmation = await res.json();
-    navigate(`/confirmation?bookingId=${confirmation.booking_id}`);
+    setShowConfirmationPopup(true);
   } catch (err) {
-    setError("Booking failed. Please try again.");
     console.error(err);
+    setError("Failed to save passengers.");
   }
 };
+
+
+  const getAirportName = (id) => {
+    const airport = airports.find((a) => a.airport_id === id);
+    return airport ? airport.airport_name : "Unknown";
+  };
+
+  if (!flightDetails) return <div>Loading...</div>;
 
   return (
     <div className="booking-page">
@@ -147,126 +153,100 @@ const handleBooking = async (e) => {
 
       <section className="flight-details">
         <h3>Flight Details</h3>
-        <p>
-          <strong>Flight Number:</strong> {flightDetails.flightNumber}
-        </p>
-        <p>
-          <strong>From:</strong> {flightDetails.origin}
-        </p>
-        <p>
-          <strong>To:</strong> {flightDetails.destination}
-        </p>
-        <p>
-          <strong>Date:</strong> {flightDetails.date}
-        </p>
-        <p>
-          <strong>Time:</strong> {flightDetails.time}
-        </p>
-        <p>
-          <strong>Price per seat:</strong> ${flightDetails.pricePerSeat}
-        </p>
-        <p>
-          <strong>Total seats selected:</strong> {selectedSeats.length} / {passengers.length}
-        </p>
-        <p>
-          <strong>Total price:</strong> ${flightDetails.pricePerSeat * selectedSeats.length}
-        </p>
+        <p><strong>Flight Number:</strong> {flightDetails.flight_num}</p>
+        <p><strong>From:</strong> {getAirportName(flightDetails.from_airport_id)}</p>
+        <p><strong>To:</strong> {getAirportName(flightDetails.to_airport_id)}</p>
+        <p><strong>Departure:</strong> {new Date(flightDetails.schedule_departure).toLocaleString()}</p>
+        <p><strong>Arrival:</strong> {new Date(flightDetails.schedule_arrival).toLocaleString()}</p>
+        <p><strong>Price per seat:</strong> ${flightDetails.base_price.toFixed(2)}</p>
+        <p><strong>Total seats selected:</strong> {selectedSeats.length} / {passengers.length}</p>
+        <p><strong>Total price:</strong> ${totalPrice.toFixed(2)}</p>
       </section>
 
       <form onSubmit={handleBooking}>
         {passengers.map((p, i) => (
           <fieldset key={i}>
             <legend>Passenger #{i + 1}</legend>
-
-            <label>
-              Full Name:
-              <input
-                type="text"
-                value={p.fullName}
-                onChange={(e) => handlePassengerChange(i, "fullName", e.target.value)}
-                required
-              />
-            </label>
-
-            <label>
-              Age:
-              <input
-                type="number"
-                value={p.age}
-                onChange={(e) => handlePassengerChange(i, "age", e.target.value)}
-                min="1"
-                required
-              />
-            </label>
-
-            <label>
-              Passport Number:
-              <input
-                type="text"
-                value={p.passportNumber}
-                onChange={(e) => handlePassengerChange(i, "passportNumber", e.target.value)}
-                required
-              />
-            </label>
-
-            <label>
-              Email:
-              <input
-                type="email"
-                value={p.email}
-                onChange={(e) => handlePassengerChange(i, "email", e.target.value)}
-                required
-              />
-            </label>
-
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={p.fullName}
+              onChange={(e) => handlePassengerChange(i, "fullName", e.target.value)}
+              required
+            />
+            <input
+              type="number"
+              placeholder="Age"
+              value={p.age}
+              onChange={(e) => handlePassengerChange(i, "age", e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Passport Number"
+              value={p.passportNumber}
+              onChange={(e) => handlePassengerChange(i, "passportNumber", e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Phone"
+              value={p.phone}
+              onChange={(e) => handlePassengerChange(i, "phone", e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Address"
+              value={p.address}
+              onChange={(e) => handlePassengerChange(i, "address", e.target.value)}
+              required
+            />
             {passengers.length > 1 && (
-              <button
-                type="button"
-                className="remove-passenger-btn"
-                onClick={() => removePassenger(i)}
-                aria-label={`Remove passenger #${i + 1}`}
-              >
-                X
-              </button>
+              <button type="button" onClick={() => removePassenger(i)}>Remove</button>
             )}
           </fieldset>
         ))}
 
-        <button type="button" className="add-passenger-btn" onClick={addPassenger}>
-          Add Passenger
-        </button>
+        <button type="button" onClick={addPassenger}>Add Passenger</button>
 
-        <div>
-          <h3>Select Your Seat(s)</h3>
-          <div className="seat-map">
-            {Array.from({ length: SEAT_ROWS }).map((_, rowIndex) => {
-              return SEAT_LETTERS.map((letter) => {
-                const seat = `${rowIndex + 1}${letter}`;
-                const selected = selectedSeats.includes(seat);
-
-                return (
-                  <button
-                    type="button"
-                    key={seat}
-                    className={`seat-button ${selected ? "selected" : ""}`}
-                    onClick={() => toggleSeat(seat)}
-                    aria-pressed={selected}
-                    aria-label={`Seat ${seat}`}
-                  >
-                    {seat}
-                  </button>
-                );
-              });
-            })}
-          </div>
+        <h3>Select Seats</h3>
+        <div className="seat-map">
+          {Array.from({ length: SEAT_ROWS }).map((_, rowIndex) =>
+            SEAT_LETTERS.map((letter) => {
+              const seat = `${rowIndex + 1}${letter}`;
+              const selected = selectedSeats.includes(seat);
+              return (
+                <button
+                  type="button"
+                  key={seat}
+                  className={`seat-button ${selected ? "selected" : ""}`}
+                  onClick={() => toggleSeat(seat)}
+                >
+                  {seat}
+                </button>
+              );
+            })
+          )}
         </div>
 
         {error && <p className="error-msg">{error}</p>}
 
-        <button type="submit" className="submit-btn">
-          Confirm Booking
-        </button>
+        <button type="submit">Confirm Booking</button>
       </form>
+
+      {showConfirmationPopup && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <h3>Booking Successful</h3>
+            <p>Do you want to proceed to payment?</p>
+            <div className="popup-buttons">
+              <button onClick={() => setShowConfirmationPopup(false)}>Cancel</button>
+              <button onClick={() => navigate(`/payment?bookingId=${bookingId}&total=${totalPrice}`)}>Proceed to Payment</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

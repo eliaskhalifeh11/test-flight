@@ -1,7 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../css/searchflights.css";
 
+// Airline logos
 import mea from "../assets/images/MEAL.png";
 import qatar from "../assets/images/qatarL.png";
 import Emirates from "../assets/images/Emirates.png";
@@ -12,6 +14,8 @@ function SearchFlights() {
   const city = query.get("city");
 
   const [airports, setAirports] = useState([]);
+
+  // Form input state
   const [formData, setFormData] = useState({
     from: "",
     to: "",
@@ -41,6 +45,7 @@ function SearchFlights() {
     return `${year}-${month}-${day}`;
   }
 
+  // Autofill "To" based on city param in URL
   useEffect(() => {
     if (city) {
       const found = airports.find(
@@ -54,10 +59,11 @@ function SearchFlights() {
     }
   }, [city, airports]);
 
+  // 🔽 API CALL #1 — Fetch all airports for dropdown
   useEffect(() => {
     const fetchAirports = async () => {
       try {
-        const res = await fetch("https://localhost:7162/api/Airport");
+        const res = await fetch("https://localhost:7162/api/Airport"); // 👈 GET /api/Airport
         if (!res.ok) throw new Error("Failed to fetch airports");
         const data = await res.json();
         setAirports(data);
@@ -70,12 +76,13 @@ function SearchFlights() {
 
     const now = new Date();
     now.setSeconds(0, 0);
-    setMinDateTime(now.toISOString().slice(0, 10));
+    setMinDateTime(now.toISOString().slice(0, 10)); // Set today's date as min
   }, []);
 
-  const handleBook = (flightId) => {
+  // Handle booking button
+  const handleBook = (flight_id) => {
     if (isLoggedIn) {
-      navigate(`/booking/${flightId}`);
+      navigate(`/booking/${flight_id}`);
     } else {
       alert("Please log in to book a flight.");
       navigate("/auth");
@@ -93,6 +100,7 @@ function SearchFlights() {
     first: 2,
   };
 
+  // 🔽 API CALL #2 — Search for flights using form input
   const handleSearch = async (e) => {
     e.preventDefault();
     setError("");
@@ -100,6 +108,7 @@ function SearchFlights() {
     setLoading(true);
     setResults([]);
 
+    // Form validation
     if (formData.from === formData.to) {
       setLoading(false);
       return setError("Departure and arrival airports cannot be the same.");
@@ -132,27 +141,26 @@ function SearchFlights() {
     try {
       const formattedDate = formatDateToYYYYMMDD(formData.departureDate);
 
-     const res = await fetch(
-      `https://localhost:7162/api/Flight/search?fromAirportId=${formData.from}&toAirportId=${formData.to}&departureDate=${formattedDate}`
-    );
-
+      // Construct API URL dynamically with query params
+      const res = await fetch(
+        `https://localhost:7162/api/Flight/search?fromAirportId=${formData.from}&toAirportId=${formData.to}&departureDate=${formattedDate}`
+      ); // 👈 GET /api/Flight/search?fromAirportId=..&toAirportId=..&departureDate=..
 
       if (!res.ok) throw new Error("Server error");
       const data = await res.json();
 
-
+      // Enhance result: calculate duration & price per class & passenger count
       const finalResults = data.map((f) => {
-      const hours = Math.floor(f.DurationMinutes / 60);
-      const minutes = f.DurationMinutes % 60;
-      return {
-        ...f,
-        scheduleDeparture: f.ScheduleDeparture,
-        scheduleArrival: f.ScheduleArrival,
-        duration: `${hours}h ${minutes}m`,
-        price: f.Price * formData.passengers * classPriceMultiplier[formData.travelClass],
-      };
-    });
-
+        const hours = Math.floor(f.DurationMinutes / 60);
+        const minutes = f.DurationMinutes % 60;
+        return {
+          ...f,
+          scheduleDeparture: f.ScheduleDeparture,
+          scheduleArrival: f.ScheduleArrival,
+          duration: `${hours}h ${minutes}m`,
+          price: f.Price * formData.passengers * classPriceMultiplier[formData.travelClass],
+        };
+      });
 
       setResults(finalResults);
       setMessage(finalResults.length ? "✅ Flights loaded successfully." : "No flights found for the selected route.");
@@ -164,6 +172,7 @@ function SearchFlights() {
     }
   };
 
+  // Filter and sort results on client side
   const filteredSortedResults = results
     .filter((flight) => {
       if (filterMaxPrice && flight.price > Number(filterMaxPrice)) return false;
@@ -202,10 +211,12 @@ function SearchFlights() {
     }
   };
 
+  // JSX Return (UI part)
   return (
     <div className="search-flights-container">
       <h1>Search Flights</h1>
 
+      {/* Trip type toggle */}
       <div className="trip-type-toggle">
         <label>
           <input
@@ -232,6 +243,7 @@ function SearchFlights() {
       {error && <div className="error-message">{error}</div>}
       {message && <div className="success-message">{message}</div>}
 
+      {/* Form Inputs */}
       <form onSubmit={handleSearch} className="search-form">
         <label>
           From:
@@ -259,40 +271,19 @@ function SearchFlights() {
 
         <label>
           Departure Date:
-          <input
-            type="date"
-            name="departureDate"
-            value={formData.departureDate}
-            onChange={handleChange}
-            required
-            min={minDateTime}
-          />
+          <input type="date" name="departureDate" value={formData.departureDate} onChange={handleChange} required min={minDateTime} />
         </label>
 
         {tripType === "roundtrip" && (
           <label>
             Return Date:
-            <input
-              type="date"
-              name="returnDate"
-              value={formData.returnDate}
-              onChange={handleChange}
-              required
-              min={minDateTime}
-            />
+            <input type="date" name="returnDate" value={formData.returnDate} onChange={handleChange} required min={minDateTime} />
           </label>
         )}
 
         <label>
           Passengers:
-          <input
-            type="number"
-            name="passengers"
-            min="1"
-            max="100"
-            value={formData.passengers}
-            onChange={handleChange}
-          />
+          <input type="number" name="passengers" min="1" max="100" value={formData.passengers} onChange={handleChange} />
         </label>
 
         <label>
@@ -307,16 +298,11 @@ function SearchFlights() {
         <button type="submit">Search</button>
       </form>
 
+      {/* Filters and Sort */}
       <div className="filter-sort-controls">
         <label>
           Max Price: $
-          <input
-            type="number"
-            min="0"
-            value={filterMaxPrice}
-            onChange={(e) => setFilterMaxPrice(e.target.value)}
-            placeholder="No limit"
-          />
+          <input type="number" min="0" value={filterMaxPrice} onChange={(e) => setFilterMaxPrice(e.target.value)} placeholder="No limit" />
         </label>
 
         <label>
@@ -353,6 +339,7 @@ function SearchFlights() {
         </button>
       </div>
 
+      {/* Results section */}
       <div className="search-results">
         {loading ? (
           <div className="loader">
@@ -364,19 +351,13 @@ function SearchFlights() {
           filteredSortedResults.map((flight) => (
             <div key={flight.id} className="flight-card">
               <div className="flight-header">
-                <img
-                  src={getAirlineLogo(flight.airline)}
-                  alt={flight.airline}
-                  className="airline-logo"
-                />
+                <img src={getAirlineLogo(flight.airline)} alt={flight.airline} className="airline-logo" />
                 <div>
                   <h3>{flight.airline}</h3>
                   <small>{flight.flightNumber}</small>
                 </div>
               </div>
-              <p>
-                {flight.departure} → {flight.arrival}
-              </p>
+              <p>{flight.departure} → {flight.arrival}</p>
               <p>🕒 {flight.time}</p>
               <p>🛫 Departure: {new Date(flight.scheduleDeparture).toLocaleString()}</p>
               <p>🛬 Arrival: {new Date(flight.scheduleArrival).toLocaleString()}</p>
@@ -385,9 +366,8 @@ function SearchFlights() {
               <p>🧍 Passengers: {formData.passengers}</p>
               <p>💺 Class: {formData.travelClass.charAt(0).toUpperCase() + formData.travelClass.slice(1)}</p>
 
-
               {isLoggedIn ? (
-                <button onClick={() => handleBook(flight.id)}>Book</button>
+                <button onClick={() => handleBook(flight.Id)}>Book</button>
               ) : (
                 <button onClick={() => navigate("/auth")}>Login to Book</button>
               )}

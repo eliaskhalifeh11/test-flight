@@ -7,44 +7,45 @@
   background-color: #0057b8;
   color: white;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 12px 20px;
   z-index: 1000;
   box-sizing: border-box;
   flex-wrap: wrap;
 }
 
-.navbar__logo {
+.navbar__left {
+  flex-shrink: 0;
+}
+
+.nav-logo {
   font-size: 1.75rem;
   font-weight: bold;
   color: white;
+  text-decoration: none;
   white-space: nowrap;
 }
 
-.navbar__left {
+/* ==== Navigation Links ==== */
+.nav-links {
+  margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 5rem;
+  gap: 1.5rem;
 }
 
-.navbar__links {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  transition: all 0.3s ease;
-}
-
-.navbar__links a,
+.nav-links a,
 .dropdown__toggle {
   color: white;
   text-decoration: none;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   position: relative;
   white-space: nowrap;
 }
 
-.navbar__links a::after {
+.nav-links a::after,
+.dropdown__toggle::after {
   content: "";
   position: absolute;
   width: 0%;
@@ -52,40 +53,30 @@
   bottom: -4px;
   left: 0;
   background-color: white;
-  transition: 0.3s;
+  transition: 0.3s ease-in-out;
 }
 
-.navbar__links a:hover::after {
+.nav-links a:hover::after,
+.dropdown__toggle:hover::after {
   width: 100%;
 }
 
 /* ==== Admin Dropdown ==== */
 .dropdown {
   position: relative;
-  cursor: pointer;
 }
 
 .dropdown__menu {
   position: absolute;
-  top: 30px;
+  top: 35px;
   left: 0;
   background-color: #0049a4;
+  display: none;
   flex-direction: column;
   border-radius: 6px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   min-width: 160px;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  display: none;
   z-index: 999;
-}
-
-.dropdown__menu.open {
-  display: flex;
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .dropdown__menu a {
@@ -99,14 +90,19 @@
   background-color: #003b87;
 }
 
-/* ==== Profile + Auth ==== */
+.dropdown:hover .dropdown__menu {
+  display: flex;
+}
+
+/* ==== Auth Section ==== */
 .navbar__auth {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-left: 2rem;
 }
 
-.navbar__username {
+.welcome-msg {
   font-weight: bold;
   color: white;
 }
@@ -118,81 +114,52 @@
   padding: 6px 12px;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 1rem;
 }
 
 .logout-btn:hover {
   background-color: #c82333;
 }
 
-.profile-icon-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-}
-
-.profile-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  filter: invert(100%);
-}
-
-/* ==== Hamburger Toggle ==== */
-.navbar__toggle {
-  display: none;
-  background: none;
-  border: none;
-  font-size: 1.8rem;
-  color: white;
-  cursor: pointer;
-}
-
-/* ==== Responsive Styles ==== */
+/* ==== Responsive ==== */
 @media (max-width: 768px) {
-  .navbar__toggle {
-    display: block;
-  }
-
-  .navbar__links {
+  .navbar {
     flex-direction: column;
-    position: absolute;
-    top: 100%;
-    left: 0;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
+    margin-left: 0;
+    padding: 15px 20px;
     background-color: #0057b8;
-    padding: 10px 0;
-    max-height: 0;
-    overflow: hidden;
+    gap: 1rem;
   }
 
-  .navbar__links.open {
-    max-height: 300px;
-  }
-
-  .navbar__links a,
-  .dropdown__toggle {
-    padding: 10px 20px;
-    text-align: center;
-    font-size: 1.2rem;
+  .navbar__auth {
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
+    margin-left: 0;
+    padding: 10px 20px 0;
   }
 
   .dropdown__menu {
     position: static;
     box-shadow: none;
     background-color: #0049a4;
-    transform: none;
-    opacity: 1;
     display: flex !important;
-  }
-
-  .dropdown {
-    width: 100%;
   }
 
   .dropdown__menu a {
     width: 100%;
     font-size: 1.1rem;
+  }
+
+  .dropdown__toggle {
+    padding: 10px 0;
+    width: 100%;
   }
 }

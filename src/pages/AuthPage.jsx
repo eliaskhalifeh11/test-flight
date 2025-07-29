@@ -24,6 +24,10 @@ function AuthPage() {
   const navigate = useNavigate();
 
   const isFullNameValid = (name) => /^[A-Za-z\s]+$/.test(name);
+  const isUsernameValid = (username) => {
+  return /[a-zA-Z]/.test(username); // must contain at least one letter
+};
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -62,38 +66,45 @@ function AuthPage() {
     }
   };
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    if (!isFullNameValid(signupFullName)) {
-      setError("Full Name must contain only letters and spaces.");
+ const handleSignup = async (e) => {
+  e.preventDefault();
+
+  if (!isFullNameValid(signupFullName)) {
+    setError("Full Name must contain only letters and spaces.");
+    return;
+  }
+
+  if (!isUsernameValid(signupUsername)) {
+    setError("Username must contain at least one letter.");
+    return;
+  }
+
+  try {
+    const response = await fetch("https://localhost:7162/api/Auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: signupFullName,
+        email: signupEmail,
+        username: signupUsername,
+        password: signupPassword,
+      }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      setError(data.message || "Signup failed");
       return;
     }
 
-    try {
-      const response = await fetch("https://localhost:7162/api/Auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fullName: signupFullName,
-          email: signupEmail,
-          username: signupUsername,
-          password: signupPassword,
-        }),
-      });
+    localStorage.setItem("loggedIn", "true");
+    localStorage.setItem("role", data.role);
+    navigate("/");
+  } catch (err) {
+    setError("Server error. Try again later.");
+  }
+};
 
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.message || "Signup failed");
-        return;
-      }
-
-      localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("role", data.role);
-      navigate("/");
-    } catch (err) {
-      setError("Server error. Try again later.");
-    }
-  };
 
   return (
     <div className="auth-page">
