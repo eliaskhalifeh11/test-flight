@@ -14,6 +14,7 @@ import Rome from "../assets/images/rome.jpg";
 import Dubai from "../assets/images/dubai.webp";
 import Bangkok from "../assets/images/bangkok.jpg";
 
+
 // Destination card
 function DestinationCard({ city, imageUrl, link }) {
   return (
@@ -166,26 +167,21 @@ function Home() {
         </section>
 
         {/* Call to Action */}
-        <section className="cta-section">
-          <h2>Ready to fly?</h2>
-          <p>Book your dream destination today!</p>
-          <Link to="/search">
-            <button className="cta-button">Book Now</button>
-          </Link>
-        </section>
+       
       </main>
 
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-profile">
-          <Link to="../profile">
-            <img
-              src="https://www.w3schools.com/howto/img_avatar.png"
-              alt="User Avatar"
-              className="sidebar-avatar"
-              style={{ cursor: "pointer" }}
-            />
-          </Link>
+         <Link to="/Profile">
+          <img
+            src="https://www.w3schools.com/howto/img_avatar.png"
+            alt="User Avatar"
+            className="sidebar-avatar"
+            style={{ cursor: "pointer" }}
+          />
+        </Link> 
+
 
           <h4>{localStorage.getItem("role") || "Guest"}</h4>
         </div>

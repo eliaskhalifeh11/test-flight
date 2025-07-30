@@ -10,7 +10,7 @@ function Confirmation() {
 
   if (!bookingDetails) {
     return (
-      <div className="confirmation-page">
+      <div className="confirm-page">
         <h2>No booking information found.</h2>
         <button onClick={() => navigate("/")}>Go to Home</button>
       </div>
@@ -26,18 +26,18 @@ function Confirmation() {
   }).format(new Date(flightDetails.date));
 
   return (
-    <div className="confirmation-page">
+    <div className="confirm-page">
       <h1>Booking Confirmed! ✈️</h1>
 
-      <div className="confirmation-section">
+      <div className="confirm-section">
         <h2>Booking Reference</h2>
         <p><strong>Booking ID:</strong> {bookingId || "N/A"}</p>
       </div>
 
-      <div className="confirmation-section">
+      <div className="confirm-section">
         <h2>Passenger Info</h2>
         {passengers.map((p, index) => (
-          <div key={index} className="passenger-block">
+          <div key={index} className="confirm-passenger-block">
             <p><strong>Name:</strong> {p.fullName}</p>
             <p><strong>Age:</strong> {p.age}</p>
             <p><strong>Passport:</strong> {p.passport}</p>
@@ -47,7 +47,7 @@ function Confirmation() {
         <p><strong>Seats:</strong> {seats.join(", ")}</p>
       </div>
 
-      <div className="confirmation-section">
+      <div className="confirm-section">
         <h2>Flight Info</h2>
         <p><strong>From:</strong> {flightDetails.departure}</p>
         <p><strong>To:</strong> {flightDetails.arrival}</p>
@@ -56,12 +56,12 @@ function Confirmation() {
         <p><strong>Flight No:</strong> {flightDetails.flightNumber}</p>
       </div>
 
-      <div className="confirmation-section">
+      <div className="confirm-section">
         <h2>Total Price</h2>
         <p><strong>${totalPrice}</strong></p>
       </div>
 
-      <div className="confirmation-buttons">
+      <div className="confirm-buttons">
         <button onClick={() => navigate("/")}>Back to Home</button>
         <button onClick={() => window.print()}>Print Confirmation</button>
       </div>

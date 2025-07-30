@@ -1,4 +1,4 @@
-.confirmation-page {
+.confirm-page {
   max-width: 700px;
   margin: 40px auto;
   font-family: Arial, sans-serif;
@@ -8,12 +8,12 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.confirmation-page h1 {
+.confirm-page h1 {
   text-align: center;
   color: #0066cc;
 }
 
-.confirmation-section {
+.confirm-section {
   margin-bottom: 20px;
   background-color: #fff;
   padding: 15px 20px;
@@ -21,39 +21,45 @@
   border-left: 5px solid #0066cc;
 }
 
-.confirmation-section h2 {
+.confirm-section h2 {
   color: #333;
   margin-bottom: 10px;
 }
 
-.confirmation-section p {
+.confirm-section p {
   margin: 6px 0;
 }
 
-button {
-  background-color: #0066cc;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: block;
-  margin: 0 auto;
-}
-
-button:hover {
-  background-color: #004d99;
-}
-
-.passenger-block {
+.confirm-passenger-block {
   background-color: #f9f9f9;
   padding: 10px;
   margin-bottom: 8px;
   border-radius: 8px;
 }
 
-.confirmation-buttons {
+.confirm-buttons {
   margin-top: 20px;
   display: flex;
   gap: 15px;
+}
+
+/* Replace button styles with a class you apply to div/span as clickable elements */
+.confirm-btn {
+  background-color: #0066cc;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  user-select: none;
+  /* to mimic button behavior */
+  display: inline-block;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.confirm-btn:hover,
+.confirm-btn:focus {
+  background-color: #004d99;
+  outline: none;
 }

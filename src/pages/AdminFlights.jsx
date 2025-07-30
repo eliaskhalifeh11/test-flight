@@ -233,7 +233,7 @@ if (arrivalDate <= departureDate) {
         {isEditing ? "Cancel Edit" : "Add New Flight"}
       </button>
 
-      <form className="flight-form" onSubmit={handleSubmit}>
+      <form className="flight-form-admin" onSubmit={handleSubmit}>
         <input
           type="text"
           name="flightNum"
@@ -245,7 +245,7 @@ if (arrivalDate <= departureDate) {
         />
         
 
-        <select name="airline_id" value={form.airline_id} onChange={handleInputChange} required>
+        <select className="airline_id" value={form.airline_id} onChange={handleInputChange} required>
           <option value="">Select Airline</option>
           {airlines.map((a) => (
             <option key={a.airline_id} value={a.airline_id}>
@@ -254,7 +254,7 @@ if (arrivalDate <= departureDate) {
           ))}
         </select>
 
-        <select name="fromAirportId" value={form.fromAirportId} onChange={handleInputChange} required>
+        <select className="fromAirportId" value={form.fromAirportId} onChange={handleInputChange} required>
           <option value="">From Airport</option>
           {airports.map((a) => (
             <option key={a.airport_id} value={a.airport_id}>
@@ -263,7 +263,7 @@ if (arrivalDate <= departureDate) {
           ))}
         </select>
 
-        <select name="toAirportId" value={form.toAirportId} onChange={handleInputChange} required>
+        <select className="toAirportId" value={form.toAirportId} onChange={handleInputChange} required>
           <option value="">To Airport</option>
           {airports.map((a) => (
             <option key={a.airport_id} value={a.airport_id}>
@@ -272,7 +272,7 @@ if (arrivalDate <= departureDate) {
           ))}
         </select>
 
-       <label>
+     
   Departure:
  <input
   type="datetime-local"
@@ -283,9 +283,9 @@ if (arrivalDate <= departureDate) {
   min={minDateTime}
 />
 
-</label>
 
-<label>
+
+
   Arrival:
   <input
   type="datetime-local"
@@ -295,8 +295,6 @@ if (arrivalDate <= departureDate) {
   required
   min={minDateTime}
 />
-
-</label>
 
 
         <div className="basep">
@@ -311,7 +309,7 @@ if (arrivalDate <= departureDate) {
           />
         </div>
 
-        <button type="submit" className="submit-btn">
+        <button type="" className="submit-btn-flight">
           {isEditing ? "Update Flight" : "Add Flight"}
         </button>
       </form>

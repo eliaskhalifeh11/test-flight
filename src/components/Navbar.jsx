@@ -9,7 +9,9 @@ function Navbar() {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      console.log("Loaded user from localStorage:", parsedUser); // debug log
+      setUser(parsedUser);
     }
   }, []);
 
@@ -27,7 +29,7 @@ function Navbar() {
         <Link to="/">Home</Link>
         <Link to="/search">Search Flights</Link>
 
-        {user?.role === "admin" && (
+        {user?.role?.toLowerCase() === "admin" && (
           <div className="dropdown">
             <span className="dropdown__toggle">Admin ▾</span>
             <div className="dropdown__menu">

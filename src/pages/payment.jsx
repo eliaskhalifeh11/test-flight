@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import "../css/payment.css";
 
 function PaymentPage() {
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -13,7 +14,6 @@ function PaymentPage() {
   const bookingId = searchParams.get("bookingId");
   const totalFromUrl = searchParams.get("total");
 
-  // Set amount from URL total if available on mount
   useEffect(() => {
     if (totalFromUrl) {
       setAmount(totalFromUrl);
@@ -36,19 +36,19 @@ function PaymentPage() {
 
     try {
       const paymentData = {
-        booking_id: parseInt(bookingId, 10),
-        payment_date: new Date().toISOString(),
+        booking_id: parseInt(bookingId), // ensure it's a number
         amount: parseFloat(amount),
         currency,
         payment_method: paymentMethod,
         status,
+        payment_date: new Date().toISOString(),
       };
-
-      console.log("Sending payment data:", paymentData);
 
       const res = await fetch("https://localhost:7162/api/Payment", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(paymentData),
       });
 
@@ -67,53 +67,46 @@ function PaymentPage() {
   };
 
   return (
-    <div className="payment-page" style={{ maxWidth: 400, margin: "auto" }}>
+    <div className="payment-container">
       <h2>Payment for Booking #{bookingId || "N/A"}</h2>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Amount:
-          <input
-            type="number"
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
-          />
-        </label>
-        <br />
-        <label>
-          Currency:
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)} required>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="LBP">LBP</option>
-          </select>
-        </label>
-        <br />
-        <label>
-          Payment Method:
-          <select
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-            required
-          >
-            <option value="">-- Select Method --</option>
-            <option value="Credit Card">Credit Card</option>
-            <option value="PayPal">PayPal</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-          </select>
-        </label>
-        <br />
-        <label>
-          Status:
-          <select value={status} onChange={(e) => setStatus(e.target.value)} required>
-            <option value="Pending">Pending</option>
-            <option value="Completed">Completed</option>
-            <option value="Failed">Failed</option>
-          </select>
-        </label>
-        <br />
-        {error && <p style={{ color: "red" }}>{error}</p>}
+      <form className="payment-form" onSubmit={handleSubmit}>
+        <label>Amount</label>
+        <input
+          type="number"
+          step="0.01"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          required
+        />
+
+        <label>Currency</label>
+        <select value={currency} onChange={(e) => setCurrency(e.target.value)} required>
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="LBP">LBP</option>
+        </select>
+
+        <label>Payment Method</label>
+        <select
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          required
+        >
+          <option value="">-- Select Method --</option>
+          <option value="Credit Card">Credit Card</option>
+          <option value="PayPal">PayPal</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+        </select>
+
+        <label>Status</label>
+        <select value={status} onChange={(e) => setStatus(e.target.value)} required>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+          <option value="Failed">Failed</option>
+        </select>
+
+        {error && <p className="payment-error">{error}</p>}
+
         <button type="submit">Submit Payment</button>
       </form>
     </div>

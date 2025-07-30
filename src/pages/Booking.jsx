@@ -15,23 +15,26 @@ function Booking() {
   const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
   const [bookingId, setBookingId] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
+  const [selectedSeats, setSelectedSeats] = useState([]);
 
   const [passengers, setPassengers] = useState([
     { fullName: "", age: "", passportNumber: "", email: "", phone: "", address: "" },
   ]);
-  const [selectedSeats, setSelectedSeats] = useState([]);
 
+  // Fetch flight details and airports
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-    const user = JSON.parse(localStorage.getItem("user"));
+    if (!id) {
+      setError("Flight ID is missing.");
+      return;
+    }
 
-    if (!isLoggedIn || !user) {
+    const userStr = localStorage.getItem("user");
+    if (!userStr) {
       alert("You must be logged in to book a flight.");
       navigate("/auth");
       return;
     }
 
-    // Fetch flight details
     const fetchFlightDetails = async () => {
       try {
         const res = await fetch(`https://localhost:7162/api/Flight/${id}`);
@@ -46,31 +49,26 @@ function Booking() {
 
     fetchFlightDetails();
 
-    // Fetch airports
     fetch("https://localhost:7162/api/Airport")
       .then((res) => res.json())
       .then(setAirports)
       .catch((err) => console.error("Failed to fetch airports", err));
   }, [id, navigate]);
 
-  const handlePassengerChange = (index, field, value) => {
-    const updatedPassengers = [...passengers];
-    updatedPassengers[index][field] = value;
-    setPassengers(updatedPassengers);
+  // Update total price when seats or price change
+  useEffect(() => {
+    if (flightDetails && selectedSeats.length > 0) {
+      setTotalPrice(flightDetails.base_price * selectedSeats.length);
+    }
+  }, [selectedSeats, flightDetails]);
+
+  // Helper to get airport name
+  const getAirportName = (airportId) => {
+    const airport = airports.find((a) => a.airport_id === airportId);
+    return airport ? airport.airport_name : "Unknown";
   };
 
-  const addPassenger = () => {
-    setPassengers([
-      ...passengers,
-      { fullName: "", age: "", passportNumber: "", email: "", phone: "", address: "" },
-    ]);
-  };
-
-  const removePassenger = (index) => {
-    if (passengers.length === 1) return;
-    setPassengers(passengers.filter((_, i) => i !== index));
-  };
-
+  // Handle seat selection
   const toggleSeat = (seat) => {
     if (selectedSeats.includes(seat)) {
       setSelectedSeats(selectedSeats.filter((s) => s !== seat));
@@ -83,69 +81,83 @@ function Booking() {
     }
   };
 
-  const handleBooking = async (e) => {
-  e.preventDefault();
-  setError("");
-
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  if (!user) {
-    setError("User not logged in.");
-    return;
-  }
-
-  // Validate required passenger fields only
-  for (let i = 0; i < passengers.length; i++) {
-    const p = passengers[i];
-    if (!p.passportNumber || !p.phone || !p.address) {
-      setError(`Please fill passport number, phone, and address for passenger #${i + 1}`);
-      return;
-    }
-  }
-
-  if (selectedSeats.length !== passengers.length) {
-    setError("Please select exactly one seat per passenger");
-    return;
-  }
-
-  try {
-   
-    const passengerPayload = passengers.map((p) => ({
-      user_id: user.user_id,
-      passport_number: p.passportNumber,
-      phone: p.phone,
-      address: p.address,
-    }));
-
-    
-    for (const p of passengerPayload) {
-      await fetch("https://localhost:7162/api/Passenger", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: p.user_id,
-          booking_id: bookingId,
-          passport_number: p.passport_number,
-          phone: p.phone,
-          address: p.address,
-        }),
-      });
-    }
-
-    setShowConfirmationPopup(true);
-  } catch (err) {
-    console.error(err);
-    setError("Failed to save passengers.");
-  }
-};
-
-
-  const getAirportName = (id) => {
-    const airport = airports.find((a) => a.airport_id === id);
-    return airport ? airport.airport_name : "Unknown";
+  
+  // Passenger input handlers
+  const handlePassengerChange = (index, field, value) => {
+    const updated = [...passengers];
+    updated[index][field] = value;
+    setPassengers(updated);
   };
 
-  if (!flightDetails) return <div>Loading...</div>;
+  const addPassenger = () => {
+    setPassengers([
+      ...passengers,
+      { fullName: "", age: "", passportNumber: "", email: "", phone: "", address: "" },
+    ]);
+  };
+
+  const removePassenger = (index) => {
+    if (passengers.length > 1) {
+      setPassengers(passengers.filter((_, i) => i !== index));
+    }
+  };
+
+  // Booking handler
+  const handleBooking = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) {
+      setError("User not logged in.");
+      return;
+    }
+
+    // Validate passengers
+    for (let i = 0; i < passengers.length; i++) {
+      const p = passengers[i];
+      if (!p.passportNumber || !p.phone || !p.address) {
+        setError(`Please fill passport number, phone, and address for passenger #${i + 1}`);
+        return;
+      }
+    }
+
+    if (selectedSeats.length !== passengers.length) {
+      setError("Please select exactly one seat per passenger");
+      return;
+    }
+
+    try {
+      const passengerPayload = passengers.map((p) => ({
+        user_id: user.user_id,
+        passport_number: p.passportNumber,
+        phone: p.phone,
+        address: p.address,
+      }));
+
+      for (const p of passengerPayload) {
+        await fetch("https://localhost:7162/api/Passenger", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: p.user_id,
+            booking_id: bookingId,
+            passport_number: p.passport_number,
+            phone: p.phone,
+            address: p.address,
+          }),
+        });
+      }
+
+      setShowConfirmationPopup(true);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to save passengers.");
+    }
+  };
+
+  // UI RENDER
+  if (!flightDetails) return <div>Loading flight details...</div>;
 
   return (
     <div className="booking-page">
@@ -242,7 +254,9 @@ function Booking() {
             <p>Do you want to proceed to payment?</p>
             <div className="popup-buttons">
               <button onClick={() => setShowConfirmationPopup(false)}>Cancel</button>
-              <button onClick={() => navigate(`/payment?bookingId=${bookingId}&total=${totalPrice}`)}>Proceed to Payment</button>
+              <button onClick={() => navigate(`/payment?bookingId=${bookingId}&total=${totalPrice}`)}>
+                Proceed to Payment
+              </button>
             </div>
           </div>
         </div>

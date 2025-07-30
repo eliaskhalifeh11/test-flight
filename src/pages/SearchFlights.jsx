@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../css/searchflights.css";
 
 // Airline logos
@@ -10,6 +9,7 @@ import Emirates from "../assets/images/Emirates.png";
 
 function SearchFlights() {
   const location = useLocation();
+  const navigate = useNavigate();
   const query = new URLSearchParams(location.search);
   const city = query.get("city");
 
@@ -34,20 +34,37 @@ function SearchFlights() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [minDateTime, setMinDateTime] = useState("");
-  const isLoggedIn = localStorage.getItem("loggedIn") === "true";
-  const navigate = useNavigate();
 
-  function formatDateToYYYYMMDD(date) {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
+  // Track userId in localStorage to decide login status
+  const [userId, setUserId] = useState(localStorage.getItem("userId"));
 
-  // Autofill "To" based on city param in URL
+  // Derived logged-in state
+  const isLoggedIn = !!userId;
+
   useEffect(() => {
-    if (city) {
+    // Fetch airports on mount
+    const fetchAirports = async () => {
+      try {
+        const res = await fetch("https://localhost:7162/api/Airport");
+        if (!res.ok) throw new Error("Failed to fetch airports");
+        const data = await res.json();
+        setAirports(data);
+      } catch (error) {
+        console.error("Failed to fetch airports", error);
+      }
+    };
+
+    fetchAirports();
+
+    // Set minimum date for date inputs
+    const now = new Date();
+    now.setSeconds(0, 0);
+    setMinDateTime(now.toISOString().slice(0, 10));
+  }, []);
+
+  // Autofill "To" airport if city query param exists
+  useEffect(() => {
+    if (city && airports.length > 0) {
       const found = airports.find(
         (a) =>
           a.airport_name.toLowerCase().includes(city.toLowerCase()) ||
@@ -59,34 +76,30 @@ function SearchFlights() {
     }
   }, [city, airports]);
 
-  // 🔽 API CALL #1 — Fetch all airports for dropdown
+  // Listen for storage changes & window focus to keep userId updated
   useEffect(() => {
-    const fetchAirports = async () => {
-      try {
-        const res = await fetch("https://localhost:7162/api/Airport"); // 👈 GET /api/Airport
-        if (!res.ok) throw new Error("Failed to fetch airports");
-        const data = await res.json();
-        setAirports(data);
-      } catch (error) {
-        console.error("Failed to fetch airports", error);
-      }
+    const updateUserIdFromStorage = () => {
+      setUserId(localStorage.getItem("userId"));
     };
 
-    fetchAirports();
+    window.addEventListener("storage", updateUserIdFromStorage);
+    window.addEventListener("focus", updateUserIdFromStorage);
 
-    const now = new Date();
-    now.setSeconds(0, 0);
-    setMinDateTime(now.toISOString().slice(0, 10)); // Set today's date as min
+    // Initial check on mount
+    updateUserIdFromStorage();
+
+    return () => {
+      window.removeEventListener("storage", updateUserIdFromStorage);
+      window.removeEventListener("focus", updateUserIdFromStorage);
+    };
   }, []);
 
-  // Handle booking button
-  const handleBook = (flight_id) => {
-    if (isLoggedIn) {
-      navigate(`/booking/${flight_id}`);
-    } else {
-      alert("Please log in to book a flight.");
-      navigate("/auth");
-    }
+  const formatDateToYYYYMMDD = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
   const handleChange = (e) => {
@@ -100,7 +113,7 @@ function SearchFlights() {
     first: 2,
   };
 
-  // 🔽 API CALL #2 — Search for flights using form input
+  // Handle search flights
   const handleSearch = async (e) => {
     e.preventDefault();
     setError("");
@@ -108,12 +121,10 @@ function SearchFlights() {
     setLoading(true);
     setResults([]);
 
-    // Form validation
     if (formData.from === formData.to) {
       setLoading(false);
       return setError("Departure and arrival airports cannot be the same.");
     }
-
     if (!formData.departureDate) {
       setLoading(false);
       return setError("Please select a departure date.");
@@ -141,15 +152,13 @@ function SearchFlights() {
     try {
       const formattedDate = formatDateToYYYYMMDD(formData.departureDate);
 
-      // Construct API URL dynamically with query params
       const res = await fetch(
         `https://localhost:7162/api/Flight/search?fromAirportId=${formData.from}&toAirportId=${formData.to}&departureDate=${formattedDate}`
-      ); // 👈 GET /api/Flight/search?fromAirportId=..&toAirportId=..&departureDate=..
-
+      );
       if (!res.ok) throw new Error("Server error");
+
       const data = await res.json();
 
-      // Enhance result: calculate duration & price per class & passenger count
       const finalResults = data.map((f) => {
         const hours = Math.floor(f.DurationMinutes / 60);
         const minutes = f.DurationMinutes % 60;
@@ -211,7 +220,21 @@ function SearchFlights() {
     }
   };
 
-  // JSX Return (UI part)
+  // Handle booking
+  // const handleBook = (flight_id) => {
+  //   if (isLoggedIn) {
+  //     navigate(`/booking/${flight_id}`);
+  //   } else {
+  //     alert("Please log in to book a flight.");
+  //     navigate("/auth");
+  //   }
+  // };
+  const handleBook = (flight_id) => {
+  // Always navigate to booking page
+  navigate(`/booking/${flight_id}`);
+};
+
+
   return (
     <div className="search-flights-container">
       <h1>Search Flights</h1>
@@ -366,11 +389,14 @@ function SearchFlights() {
               <p>🧍 Passengers: {formData.passengers}</p>
               <p>💺 Class: {formData.travelClass.charAt(0).toUpperCase() + formData.travelClass.slice(1)}</p>
 
-              {isLoggedIn ? (
-                <button onClick={() => handleBook(flight.Id)}>Book</button>
+              {/* {isLoggedIn ? (
+                <button onClick={() => handleBook(flight.id)}>Book</button>
               ) : (
                 <button onClick={() => navigate("/auth")}>Login to Book</button>
-              )}
+              )} */}
+            <button onClick={() => navigate(`/booking/${flight.flight_id}`)}>Book</button>
+
+
             </div>
           ))
         ) : (

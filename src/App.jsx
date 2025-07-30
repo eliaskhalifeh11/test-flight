@@ -6,7 +6,7 @@ import Footer from './components/Footer';  // <-- import Footer here
 import Home from './pages/Home';
 import SearchFlights from './pages/SearchFlights';
 import Booking from './pages/Booking';
-import Payment from './pages/Payment';
+import Payment from './pages/payment';
 import Confirmation from './pages/Confirmation';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminFlights from './pages/AdminFlights';
